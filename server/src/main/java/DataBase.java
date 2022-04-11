@@ -13,14 +13,14 @@ public class DataBase implements AuthService {
         return connection;
     }
 
-    public boolean addUser(String name, String pass) {
-        if(repeatUser(name)) return false;
+    public boolean reg (ClientProfile clientProfile) {
+        if(repeatUser(clientProfile.getName())) return false;
         @Language("SQL")
         String query = "INSERT INTO users (name, password, avatar) VALUES (?,?,?)";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, name);
-            statement.setString(2, pass);
-            statement.setBytes(3, Avatar.createAvatar(name));
+            statement.setString(1, clientProfile.getName());
+            statement.setString(2, clientProfile.getPassword());
+            statement.setBytes(3, Avatar.createAvatar(clientProfile.getName()));
             System.out.println("Пользователь успешно добавлен!");
             return true;
         } catch (SQLException e) {
@@ -29,12 +29,12 @@ public class DataBase implements AuthService {
     }
 
     public boolean repeatUser(String name) {
-        @Language("SQL")
         String query = "SELECT * FROM users";
         try (Statement statement = connection.createStatement()) {
             ResultSet rs = statement.executeQuery(query);
             while (rs.next()) {
                 if (rs.getString("name").equals(name)) {
+                    System.out.println("Учетная запись уже используется");
                     return true;
                 }
             }
@@ -76,6 +76,7 @@ public class DataBase implements AuthService {
 
     @Override
     public boolean auth(ClientProfile clientProfile) {
+        if(repeatUser(clientProfile.getName())) return false;
         @Language("SQL")
         String query = "SELECT * FROM users";
         try(Statement statement = connection.createStatement()) {
@@ -87,6 +88,7 @@ public class DataBase implements AuthService {
                     return true;
                 }
             }
+            System.out.println("Пользователь не найден");
             return false;
         } catch (SQLException e) {
             throw new RuntimeException("Ошибка базы данных при аутентификации пользователя");

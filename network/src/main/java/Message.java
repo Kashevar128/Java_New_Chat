@@ -5,6 +5,9 @@ public class Message<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private T obj;
+
+    private ClientProfile clientProfile;
+
     private TypeMessage typeMessage;
 
     public T getObj() {
@@ -15,7 +18,11 @@ public class Message<T> implements Serializable {
         return typeMessage;
     }
 
-    public Message(T obj, TypeMessage typeMessage) {
+    public ClientProfile getClientProfile() {
+        return clientProfile;
+    }
+
+    public Message(T obj, ClientProfile clientProfile, TypeMessage typeMessage) {
         this.obj = obj;
         this.typeMessage = typeMessage;
     }

@@ -3,15 +3,25 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class MyServer {
 
     private final int PORT = 8189;
     private List<ClientHandler> clients;
     private AuthService authService;
+    private ClientProfile adminProfile;
+
+    public ClientProfile getAdminProfile() {
+        return adminProfile;
+    }
 
     public AuthService getAuthService() {
         return authService;
+    }
+
+    public List<ClientHandler> getClients() {
+        return clients;
     }
 
     public MyServer() {
@@ -33,4 +43,19 @@ public class MyServer {
             }
         }
     }
+
+    public synchronized void broadcastMsg(Message<String> message) {
+        for (ClientHandler clientHandler : clients) {
+            clientHandler.sendMsg(message);
+        }
+    }
+
+    public synchronized void subscribe(ClientHandler clientHandler, boolean sub) {
+        if (sub) clients.add(clientHandler);
+        Message<String> messageServer = new Message<String>(clientHandler.getClientProfile().getName() + " вошел в чат",
+                adminProfile, TypeMessage.VERBAL_MESSAGE);
+        System.out.println(adminProfile.getName() + ": " + clientHandler.getClientProfile().getName() + " вошел в чат");
+        broadcastMsg(messageServer);
+    }
+
 }
