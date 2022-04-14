@@ -1,3 +1,6 @@
+package server;
+
+import network.ClientProfile;
 import org.intellij.lang.annotations.Language;
 
 import java.sql.*;

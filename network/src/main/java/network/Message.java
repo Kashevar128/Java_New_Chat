@@ -1,3 +1,5 @@
+package network;
+
 import java.io.Serializable;
 
 public class Message<T> implements Serializable {

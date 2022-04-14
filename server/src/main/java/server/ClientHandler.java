@@ -1,3 +1,9 @@
+package server;
+
+import network.ClientProfile;
+import network.Message;
+import network.TypeMessage;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -36,7 +42,7 @@ public class ClientHandler {
             this.clientProfile = null;
             readThread = new Thread(() -> {
                 try {
-                    authenticationOrRegistration();
+                    authentication();
                     setAuthClient(true);
                     readMessage();
                 } catch (IOException | ClassNotFoundException e) {
@@ -55,7 +61,7 @@ public class ClientHandler {
         }
     }
 
-    private void authenticationOrRegistration() throws IOException, ClassNotFoundException {
+    private void authentication() throws IOException, ClassNotFoundException {
         while (true) {
             Message message = (Message) inObj.readObject();
             setClientProfile(message.getClientProfile());
@@ -126,6 +132,7 @@ public class ClientHandler {
             e.printStackTrace();
         }
     }
+
 
 
 }

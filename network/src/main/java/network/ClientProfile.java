@@ -1,3 +1,5 @@
+package network;
+
 public class ClientProfile {
 
     private String name;

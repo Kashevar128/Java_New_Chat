@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="377.0" prefWidth="651.0" style="-fx-background-color: #636566;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.AuthController">
+<AnchorPane prefHeight="377.0" prefWidth="651.0" style="-fx-background-color: #636566;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.gui.AuthController">
       <TextField fx:id="login" layoutX="127.0" layoutY="93.0" prefHeight="38.0" prefWidth="243.0">
       <font>
          <Font size="18.0" />
@@ -39,7 +39,7 @@
          <Font size="24.0" />
       </font>
    </Label>
-   <CheckBox fx:id="RemoteIP" layoutX="428.0" layoutY="102.0" mnemonicParsing="false" text="Test">
+   <CheckBox fx:id="test" layoutX="428.0" layoutY="102.0" mnemonicParsing="false" text="Test">
       <font>
          <Font size="18.0" />
       </font>

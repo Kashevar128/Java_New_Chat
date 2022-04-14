@@ -30,6 +30,12 @@
             <artifactId>annotations</artifactId>
             <version>23.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>network</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 
