@@ -1,10 +1,12 @@
 package client.gui;
 
+import client.clientlogic.Client;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import network.ClientProfile;
 import network.Message;
 import network.Operations;
+import network.TypeMessage;
 
 public class AuthController {
 
@@ -30,7 +32,7 @@ public class AuthController {
 
         if(Operations.filterStringEmpty(loginStr, passwordStr)) return;
 
-        boolean auth =
+
 
     }
 
@@ -39,7 +41,9 @@ public class AuthController {
     }
 
     private void authClient(String loginStr, String passwordStr) {
-        ClientProfile clientProfile = new ClientProfile();
-        Message message = new Message<>(null, );
+
+        ClientProfile clientProfile = new ClientProfile(loginStr, passwordStr, null);
+        Client client = new Client(clientProfile);
+
     }
 }
