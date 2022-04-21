@@ -19,6 +19,7 @@ public class Client {
     private ObjectInputStream inObj;
     private ObjectOutputStream outObj;
     private ClientProfile clientProfile;
+    private String status;
     private boolean authentication;
 
     public boolean isAuthentication() {
@@ -37,11 +38,16 @@ public class Client {
         return outObj;
     }
 
-    public Client(ClientProfile clientProfile) throws IOException {
+    public String getStatus() {
+        return status;
+    }
+
+    public Client(ClientProfile clientProfile, String status) throws IOException {
         this.socket = new Socket("localhost", 8189);
         this.inObj = new ObjectInputStream(socket.getInputStream());
         this.outObj = new ObjectOutputStream(socket.getOutputStream());
         this.clientProfile = clientProfile;
+        this.status = status;
         setAuthentication(false);
         Thread t = new Thread(() -> {
             try {
@@ -56,15 +62,21 @@ public class Client {
 
     private void readMessage() throws IOException, ClassNotFoundException {
         while (true) {
-            authDone();
+            authOrRegDone();
             Message<String> message = (Message<String>) inObj.readObject();
             System.out.println(message.getObj());
         }
     }
 
-    private boolean authDone() throws IOException, ClassNotFoundException {
-        Message msg = new Message<String>(null, clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
-        sendMsg(msg);
+    private boolean authOrRegDone() throws IOException, ClassNotFoundException {
+        if(getStatus().equals("auth")) {
+            Message msg = new Message<String>(null, clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
+            sendMsg(msg);
+        }
+        if(getStatus().equals("reg")) {
+            Message msg = new Message<String>(null, clientProfile, TypeMessage.SERVICE_MESSAGE_REGISTRATION);
+            sendMsg(msg);
+        }
         while (true) {
             Message<String> message = (Message<String>) inObj.readObject();
             if (message.getTypeMessage().equals(TypeMessage.SERVICE_MESSAGE_AUTHORIZATION) &&

@@ -33,14 +33,18 @@ public class AuthController {
         boolean auth = false;
         String loginStr = login.getText();
         String passwordStr = password.getText();
-        if (Operations.filterStringEmpty(loginStr, passwordStr)) return;
+        if (Operations.filterStringEmpty(loginStr, passwordStr)) {
+            login.clear();
+            password.clear();
+            return;
+        }
         try {
             auth = authClient(loginStr, passwordStr);
         } catch (IOException e) {
             e.printStackTrace();
         }
         if (auth) {
-            //TODO: здесь будет создаваться новый clientgui
+
         }
 
     }
@@ -51,7 +55,7 @@ public class AuthController {
 
     private boolean authClient(String loginStr, String passwordStr) throws IOException {
         ClientProfile clientProfile = new ClientProfile(loginStr, passwordStr, null);
-        Client client = new Client(clientProfile);
+        new Client(clientProfile, "auth");
         return true;
     }
 }

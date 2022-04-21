@@ -11,6 +11,6 @@ public interface AuthService {
     public void stop();
     public boolean auth(ClientProfile clientProfile);
     public boolean reg(ClientProfile clientProfile);
-    public byte[] getAvatar(String name) throws SQLException;
+    public byte[] getBaseAvatar(String name) throws SQLException;
     public Connection getConnection() throws Exception;
 }

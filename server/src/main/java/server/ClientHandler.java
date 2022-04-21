@@ -68,18 +68,20 @@ public class ClientHandler {
             setClientProfile(message.getClientProfile());
             if (message.getTypeMessage().equals(TypeMessage.SERVICE_MESSAGE_AUTHORIZATION)) {
                 if (server.getAuthService().auth(clientProfile)) {
-                    clientProfile.setAvatar(server.getAuthService().getAvatar(clientProfile.getName()));
                     server.subscribe(this, false);
-                    Message<String>message1 = new Message<>("/authok", clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
-                    sendMsg(message1);
+                    break;
                 }
             }
             if (message.getTypeMessage().equals(TypeMessage.SERVICE_MESSAGE_REGISTRATION)) {
                 if (server.getAuthService().reg(clientProfile)) {
                     server.subscribe(this, true);
+                    break;
                 }
             }
         }
+        clientProfile.setAvatar(server.getAuthService().getBaseAvatar(clientProfile.getName()));
+        Message<String>msg =  new Message<>("/authok", clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
+        sendMsg(msg);
     }
 
     private void readMessage() throws IOException, ClassNotFoundException {

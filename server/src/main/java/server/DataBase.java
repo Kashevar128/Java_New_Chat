@@ -47,7 +47,7 @@ public class DataBase implements AuthService {
         }
     }
 
-    public byte[] getAvatar(String name) throws SQLException {
+    public byte[] getBaseAvatar(String name) throws SQLException {
         @Language("SQL")
         String query = "SELECT avatar FROM users, WHERE name = ? ";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
