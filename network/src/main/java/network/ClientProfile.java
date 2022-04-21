@@ -23,4 +23,8 @@ public class ClientProfile {
     public byte[] getAvatar() {
         return avatar;
     }
+
+    public void setAvatar(byte[] avatar) {
+        this.avatar = avatar;
+    }
 }

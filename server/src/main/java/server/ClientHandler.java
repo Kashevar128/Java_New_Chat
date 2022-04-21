@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ClientHandler {
@@ -45,7 +46,7 @@ public class ClientHandler {
                     authentication();
                     setAuthClient(true);
                     readMessage();
-                } catch (IOException | ClassNotFoundException e) {
+                } catch (IOException | ClassNotFoundException | SQLException e) {
                     e.printStackTrace();
                 } finally {
                     disconnect();
@@ -61,13 +62,16 @@ public class ClientHandler {
         }
     }
 
-    private void authentication() throws IOException, ClassNotFoundException {
+    private void authentication() throws IOException, ClassNotFoundException, SQLException {
         while (true) {
             Message message = (Message) inObj.readObject();
             setClientProfile(message.getClientProfile());
             if (message.getTypeMessage().equals(TypeMessage.SERVICE_MESSAGE_AUTHORIZATION)) {
                 if (server.getAuthService().auth(clientProfile)) {
+                    clientProfile.setAvatar(server.getAuthService().getAvatar(clientProfile.getName()));
                     server.subscribe(this, false);
+                    Message<String>message1 = new Message<>("/authok", clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
+                    sendMsg(message1);
                 }
             }
             if (message.getTypeMessage().equals(TypeMessage.SERVICE_MESSAGE_REGISTRATION)) {
