@@ -1,6 +1,7 @@
 package client.gui;
 
 import client.clientlogic.Client;
+import javafx.application.Platform;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import network.ClientProfile;
@@ -19,6 +20,8 @@ public class AuthController {
     public TextField IP_server;
     public TextField PORT_server;
     public CheckBox test;
+    private Client client;
+
 
     public AuthController() {
         authController = this;
@@ -28,6 +31,13 @@ public class AuthController {
         return authController;
     }
 
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public Client getClient() {
+        return client;
+    }
 
     public void enter() {
         boolean auth = false;
@@ -44,18 +54,29 @@ public class AuthController {
             e.printStackTrace();
         }
         if (auth) {
-
+            Platform.runLater(()->{
+                try {
+                    new ClientGui();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         }
 
     }
 
     public void reg() {
-        //TODO: здесь создается новый reggui
+        login.getScene().getWindow().hide();
+        try {
+            new RegGui();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean authClient(String loginStr, String passwordStr) throws IOException {
         ClientProfile clientProfile = new ClientProfile(loginStr, passwordStr, null);
-        new Client(clientProfile, "auth");
+        setClient(new Client(clientProfile, "auth"));
         return true;
     }
 }

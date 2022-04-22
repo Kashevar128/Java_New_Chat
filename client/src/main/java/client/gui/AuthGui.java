@@ -10,10 +10,9 @@ import java.io.IOException;
 public class AuthGui {
     private Stage stage;
 
-    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/auth.fxml"));
-    Parent auth = loader.load();
-
     public AuthGui() throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/auth.fxml"));
+        Parent auth = loader.load();
         stage = new Stage();
         stage.setTitle("Авторизация");
         stage.setScene(new Scene(auth));
