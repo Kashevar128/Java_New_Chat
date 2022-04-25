@@ -1,101 +1,88 @@
 package client.clientlogic;
 
-import network.ClientProfile;
 import network.Message;
 import network.TypeMessage;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
+import java.net.InetAddress;
 import java.net.Socket;
-
+import java.net.UnknownHostException;
+import java.util.Scanner;
 
 public class Client {
 
-    private int PORT;
     private String IP_ADDR;
+    private final int PORT = 8189;
+    private final String HOST = "localhost";
     private Socket socket;
     private ObjectInputStream inObj;
     private ObjectOutputStream outObj;
-    private ClientProfile clientProfile;
-    private String status;
-    private boolean authentication;
+    Thread readThread;
+    Thread writeThread;
 
-    public boolean isAuthentication() {
-        return authentication;
+    {
+        try {
+            IP_ADDR = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void setAuthentication(boolean authentication) {
-        this.authentication = authentication;
+    public Client() {
+        try {
+            socket = new Socket(HOST, PORT);
+            outObj = new ObjectOutputStream(socket.getOutputStream());
+            inObj = new ObjectInputStream(socket.getInputStream());
+            System.out.println("Клиент запущен");
+            readThread = new Thread(() -> {
+                while (true) {
+                    try {
+                        readMsg();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            writeThread = new Thread(() -> {
+                while (true) {
+                    writeMsg();
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        readThread.start();
+        writeThread.start();
     }
 
-    public void setClientProfile(ClientProfile clientProfile) {
-        this.clientProfile = clientProfile;
-    }
-
-    public ObjectOutputStream getOutObj() {
-        return outObj;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public Client(ClientProfile clientProfile, String status) throws IOException {
-        this.socket = new Socket("localhost", 8189);
-        this.inObj = new ObjectInputStream(socket.getInputStream());
-        this.outObj = new ObjectOutputStream(socket.getOutputStream());
-        this.clientProfile = clientProfile;
-        this.status = status;
-        setAuthentication(false);
-        Thread t = new Thread(() -> {
-            try {
-                readMessage();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
-    }
-
-    private void readMessage() throws IOException, ClassNotFoundException {
+    private void readMsg() throws IOException, ClassNotFoundException {
         while (true) {
-            authOrRegDone();
             Message<String> message = (Message<String>) inObj.readObject();
             System.out.println(message.getObj());
         }
     }
 
-    private boolean authOrRegDone() throws IOException, ClassNotFoundException {
-        if(getStatus().equals("auth")) {
-            Message msg = new Message<String>(null, clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
+    private void writeMsg() {
+        Scanner in = new Scanner(System.in);
+        String message = null;
+        while (in.hasNext()) {
+            message = in.next();
+            Message<String> msg = new Message<>(message, null, TypeMessage.VERBAL_MESSAGE);
             sendMsg(msg);
-        }
-        if(getStatus().equals("reg")) {
-            Message msg = new Message<String>(null, clientProfile, TypeMessage.SERVICE_MESSAGE_REGISTRATION);
-            sendMsg(msg);
-        }
-        while (true) {
-            Message<String> message = (Message<String>) inObj.readObject();
-            if (message.getTypeMessage().equals(TypeMessage.SERVICE_MESSAGE_AUTHORIZATION) &&
-                    message.getObj().equals("/authok")) {
-                setClientProfile(message.getClientProfile());
-                setAuthentication(true);
-                return true;
-            }
         }
     }
 
-    public void sendMsg(Message<String> message) {
-        if (message.getTypeMessage().equals(TypeMessage.VERBAL_MESSAGE)) {
-            try {
-                outObj.writeObject(message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.println(message.getObj());
+    private void sendMsg(Message msg) {
+        try {
+            outObj.writeObject(msg);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        System.out.println(msg.getObj());
     }
+
 }

@@ -1,6 +1,6 @@
 package client.clientlogic;
 
-import client.gui.AuthGui;
+import client.gui.ClientGui;
 import javafx.application.Platform;
 
 import java.io.IOException;
@@ -8,13 +8,9 @@ import java.io.IOException;
 public class LaunchClient {
 
     public static void main(String[] args) {
-        running();
-    }
-
-    public static void running() {
-        Platform.startup(()-> {
+        Platform.startup(()->{
             try {
-                new AuthGui();
+                new ClientGui();
             } catch (IOException e) {
                 e.printStackTrace();
             }

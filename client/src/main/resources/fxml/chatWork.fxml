@@ -21,7 +21,7 @@
             <HBox prefHeight="60.0" prefWidth="525.0">
                <children>
                   <TextField prefHeight="60.0" prefWidth="460.0" />
-                  <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="65.0" text="SEND" />
+                  <Button onAction="#send" mnemonicParsing="false" prefHeight="60.0" prefWidth="65.0" text="SEND" />
                </children>
             </HBox>
          </children></VBox>

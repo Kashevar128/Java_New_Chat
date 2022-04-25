@@ -1,9 +1,11 @@
 package client.gui;
 
+import client.clientlogic.Client;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import network.ClientProfile;
 
 import java.io.IOException;
 
@@ -18,5 +20,8 @@ public class ClientGui {
         stage.setScene(new Scene(chat));
         stage.setResizable(false);
         stage.show();
+
+        Client client = new Client();
+
     }
 }

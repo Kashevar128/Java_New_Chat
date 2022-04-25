@@ -14,8 +14,8 @@ import java.util.Scanner;
 public class ClientHandler {
     private MyServer server;
     private Socket socket;
-    private ObjectInputStream inObj;
     private ObjectOutputStream outObj;
+    private ObjectInputStream inObj;
     private Thread readThread;
     private Thread writeThread;
     private boolean authClient;
@@ -38,15 +38,15 @@ public class ClientHandler {
         try {
             this.server = server;
             this.socket = socket;
-            this.inObj = new ObjectInputStream(socket.getInputStream());
             this.outObj = new ObjectOutputStream(socket.getOutputStream());
+            this.inObj = new ObjectInputStream(socket.getInputStream());
             this.clientProfile = null;
             readThread = new Thread(() -> {
                 try {
-                    authentication();
+                    //  authentication();
                     setAuthClient(true);
                     readMessage();
-                } catch (IOException | ClassNotFoundException | SQLException e) {
+                } catch (IOException | ClassNotFoundException /*| SQLException*/ e) {
                     e.printStackTrace();
                 } finally {
                     disconnect();
@@ -56,8 +56,9 @@ public class ClientHandler {
                 writeMessage();
             });
             readThread.start();
-            if(authClient) writeThread.start();
+            writeThread.start();
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException("Проблемы при создании обработчика клиента");
         }
     }
@@ -80,14 +81,14 @@ public class ClientHandler {
             }
         }
         clientProfile.setAvatar(server.getAuthService().getBaseAvatar(clientProfile.getName()));
-        Message<String>msg =  new Message<>("/authok", clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
+        Message<String> msg = new Message<>("/authok", clientProfile, TypeMessage.SERVICE_MESSAGE_AUTHORIZATION);
         sendMsg(msg);
     }
 
     private void readMessage() throws IOException, ClassNotFoundException {
         while (true) {
             Message<String> message = (Message<String>) inObj.readObject();
-            System.out.println(clientProfile.getName() + ": " + message.getObj());
+            System.out.println(message.getObj());
         }
     }
 
@@ -98,32 +99,17 @@ public class ClientHandler {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println(server.getAdminProfile().getName() + ": " + message.getObj());
+            System.out.println(message.getObj());
         }
     }
 
-    private Message<String> writeMessage() {
+    private void writeMessage() {
         Scanner in = new Scanner(System.in);
-        while (true) {
-            allOrOne(createAdminMessage(in));
-        }
-    }
-
-    private Message<String> createAdminMessage(Scanner scanner) {
         String message = null;
-        message = scanner.next();
-        System.out.println(server.getAdminProfile().getName() + ": " + message);
-        Message<String> messageAdmin = new Message<>(message, server.getAdminProfile(), TypeMessage.VERBAL_MESSAGE);
-        return messageAdmin;
-    }
-
-    private void allOrOne(Message<String> message) {
-        String msg = message.getObj();
-        char slash = '/';
-        if (msg.charAt(0) == slash) {
-            sendMsg(message);
-        } else {
-            server.broadcastMsg(message);
+        while (in.hasNext()) {
+            message = in.next();
+            Message<String> msg = new Message<>(message, null, TypeMessage.VERBAL_MESSAGE);
+            sendMsg(msg);
         }
     }
 
@@ -138,7 +124,6 @@ public class ClientHandler {
             e.printStackTrace();
         }
     }
-
 
 
 }

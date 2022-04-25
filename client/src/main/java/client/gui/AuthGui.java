@@ -18,5 +18,6 @@ public class AuthGui {
         stage.setScene(new Scene(auth));
         stage.setResizable(false);
         stage.show();
+
     }
 }

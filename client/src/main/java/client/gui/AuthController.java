@@ -1,13 +1,9 @@
 package client.gui;
 
-import client.clientlogic.Client;
 import javafx.application.Platform;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
-import network.ClientProfile;
-import network.Message;
 import network.Operations;
-import network.TypeMessage;
 
 import java.io.IOException;
 
@@ -20,10 +16,9 @@ public class AuthController {
     public TextField IP_server;
     public TextField PORT_server;
     public CheckBox test;
-    private Client client;
 
 
-    public AuthController() {
+    private AuthController() {
         authController = this;
     }
 
@@ -31,16 +26,7 @@ public class AuthController {
         return authController;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
     public void enter() {
-        boolean auth = false;
         String loginStr = login.getText();
         String passwordStr = password.getText();
         if (Operations.filterStringEmpty(loginStr, passwordStr)) {
@@ -48,21 +34,14 @@ public class AuthController {
             password.clear();
             return;
         }
-        try {
-            auth = authClient(loginStr, passwordStr);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (auth) {
-            Platform.runLater(()->{
-                try {
-                    new ClientGui();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
 
+        Platform.runLater(() -> {
+            try {
+                new ClientGui();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void reg() {
@@ -73,10 +52,5 @@ public class AuthController {
             e.printStackTrace();
         }
     }
-
-    private boolean authClient(String loginStr, String passwordStr) throws IOException {
-        ClientProfile clientProfile = new ClientProfile(loginStr, passwordStr, null);
-        setClient(new Client(clientProfile, "auth"));
-        return true;
-    }
 }
+

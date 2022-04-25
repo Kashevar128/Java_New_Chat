@@ -1,8 +1,6 @@
 package client.gui;
 
-import client.clientlogic.Client;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import network.ClientProfile;
@@ -44,16 +42,17 @@ public class RegController {
 
     public void back() {
         login.getScene().getWindow().hide();
-        try {
-            new RegGui();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Platform.runLater(()-> {
+            try {
+                new AuthGui();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private boolean regClient(String loginStr, String passwordStr) throws IOException {
         ClientProfile clientProfile = new ClientProfile(loginStr, passwordStr, null);
-        new Client(clientProfile, "reg");
         return true;
     }
 }
