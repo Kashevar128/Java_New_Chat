@@ -1,5 +1,6 @@
 package client.clientlogic;
 
+import client.gui.ClientController;
 import network.Message;
 import network.TypeMessage;
 
@@ -20,7 +21,7 @@ public class Client {
     private ObjectInputStream inObj;
     private ObjectOutputStream outObj;
     Thread readThread;
-    Thread writeThread;
+    //Thread writeThread;
 
     {
         try {
@@ -47,16 +48,16 @@ public class Client {
                     }
                 }
             });
-            writeThread = new Thread(() -> {
-                while (true) {
-                    writeMsg();
-                }
-            });
+//            writeThread = new Thread(() -> {
+//                while (true) {
+//                    writeMsg();
+//                }
+//            });
         } catch (IOException e) {
             e.printStackTrace();
         }
         readThread.start();
-        writeThread.start();
+//        writeThread.start();
     }
 
     private void readMsg() throws IOException, ClassNotFoundException {
@@ -66,17 +67,17 @@ public class Client {
         }
     }
 
-    private void writeMsg() {
-        Scanner in = new Scanner(System.in);
-        String message = null;
-        while (in.hasNext()) {
-            message = in.next();
-            Message<String> msg = new Message<>(message, null, TypeMessage.VERBAL_MESSAGE);
-            sendMsg(msg);
-        }
-    }
+//    private void writeMsg() {
+//        Scanner in = new Scanner(System.in);
+//        String message = null;
+//        while (in.hasNext()) {
+//            message = in.next();
+//            Message<String> msg = new Message<>(message, null, TypeMessage.VERBAL_MESSAGE);
+//            sendMsg(msg);
+//        }
+//    }
 
-    private void sendMsg(Message msg) {
+    public void sendMsg(Message msg) {
         try {
             outObj.writeObject(msg);
         } catch (IOException e) {

@@ -22,6 +22,8 @@ public class ClientGui {
         stage.show();
 
         Client client = new Client();
-
+        ClientController clientController = new ClientController(client);
     }
+
+
 }
