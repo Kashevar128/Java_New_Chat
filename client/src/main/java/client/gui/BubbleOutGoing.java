@@ -7,25 +7,18 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import network.Operations;
 
-public class BoubbleOutGoing extends HBox {
+public class BubbleOutGoing extends Label {
     private final String stylesInGoingLabel = "-fx-background-color: #D3EEDF;" +
             "-fx-background-radius: 25px;" + "-fx-background-insets: -10;";
 
     private Label label;
-    private Image image = new Image("C:/Users/Vinogradov_M/IdeaProjects/Java_New_Chat/client/src/main/resources/img/544_oooo.plus.png");
-    private ImageView imageView;
 
-    BoubbleOutGoing(String msg) {
-        this.imageView = Operations.imageConverter(image);
+    BubbleOutGoing(String msg) {
         this.label = new Label(msg);
         label.setStyle(stylesInGoingLabel);
         label.setFont(new Font("Arial", 16));
         label.setMaxWidth(450);
         label.setWrapText(true);
     }
-
-
-
-
 
 }
