@@ -14,6 +14,7 @@ public class HBoxChat extends HBox {
     private Image image = new Image("/img/544_oooo.plus.png");
 
     public HBoxChat(Label label) {
+        System.out.println("Здесь текст лэйбла" + label.getText());
         ImageView imageView = Operations.imageConverter(image);
         if(label instanceof BubbleOutGoing) {
             this.setAlignment(Pos.CENTER_LEFT);

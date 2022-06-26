@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import network.Message;
 import network.TypeMessage;
 
+
 public class ClientController {
 
     private Client client;
@@ -23,6 +24,7 @@ public class ClientController {
     public ListView <HBoxChat> listDialog;
 
     public void send() {
+        System.out.println(input.getText());
         Label bubbleOut = new BubbleOutGoing(input.getText());
         HBoxChat hBoxChat = new HBoxChat(bubbleOut);
         Message<String> message = new Message<>(input.getText(), null, TypeMessage.VERBAL_MESSAGE);
