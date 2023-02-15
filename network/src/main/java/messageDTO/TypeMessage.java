@@ -1,4 +1,4 @@
-package network;
+package messageDTO;
 
 public enum TypeMessage {
     VERBAL_MESSAGE,

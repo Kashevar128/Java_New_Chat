@@ -1,6 +1,6 @@
-package client.clientlogic;
+package client;
 
-import client.gui.ClientGui;
+import guiWindows.AuthGui;
 import javafx.application.Platform;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ public class LaunchClient {
     public static void main(String[] args) {
         Platform.startup(()->{
             try {
-                new ClientGui();
+                new AuthGui();
             } catch (IOException e) {
                 e.printStackTrace();
             }

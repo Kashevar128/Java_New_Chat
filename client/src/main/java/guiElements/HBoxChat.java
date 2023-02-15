@@ -1,12 +1,11 @@
-package client.gui;
+package guiElements;
 
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import network.Operations;
+import common.Operations;
 
 public class HBoxChat extends HBox {
 
@@ -15,7 +14,7 @@ public class HBoxChat extends HBox {
 
     public HBoxChat(Label label) {
         System.out.println("Здесь текст лэйбла" + label.getText());
-        ImageView imageView = Operations.imageConverter(image);
+        ImageView imageView = Operations.imageToImageViewConverter(image);
         if(label instanceof BubbleOutGoing) {
             this.setAlignment(Pos.CENTER_LEFT);
             this.getChildren().addAll(imageView, label);

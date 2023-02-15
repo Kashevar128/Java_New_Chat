@@ -7,20 +7,20 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="377.0" prefWidth="651.0" style="-fx-background-color: #636566;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.gui.AuthController">
-      <TextField fx:id="login" layoutX="127.0" layoutY="93.0" prefHeight="38.0" prefWidth="243.0">
+<AnchorPane prefHeight="377.0" prefWidth="400.0" style="-fx-background-color: #636566;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AuthController">
+      <TextField fx:id="login" layoutX="150.0" layoutY="93.0" prefHeight="38.0" prefWidth="243.0">
       <font>
          <Font size="18.0" />
       </font></TextField>
-      <TextField fx:id="password" layoutX="127.0" layoutY="158.0" prefHeight="38.0" prefWidth="243.0">
+      <TextField fx:id="password" layoutX="150.0" layoutY="158.0" prefHeight="38.0" prefWidth="243.0">
       <font>
          <Font size="18.0" />
       </font></TextField>
-      <Button layoutX="198.0" layoutY="215.0" mnemonicParsing="false" onAction="#enter" prefHeight="44.0" prefWidth="101.0" text="Enter" textFill="#18c92db8">
+      <Button layoutX="210.0" layoutY="215.0" mnemonicParsing="false" onAction="#enter" prefHeight="44.0" prefWidth="101.0" text="Enter" textFill="#18c92db8">
       <font>
          <Font name="Lucida Sans Demibold Italic" size="18.0" />
       </font></Button>
-      <Button layoutX="176.0" layoutY="281.0" mnemonicParsing="false" onAction="#reg" prefHeight="44.0" prefWidth="146.0" text="Registration" textFill="#d31d1d">
+      <Button layoutX="190.0" layoutY="281.0" mnemonicParsing="false" onAction="#reg" prefHeight="44.0" prefWidth="146.0" text="Registration" textFill="#d31d1d">
       <font>
          <Font name="Lucida Sans Demibold Italic" size="18.0" />
       </font></Button>
@@ -39,29 +39,4 @@
          <Font size="24.0" />
       </font>
    </Label>
-   <CheckBox fx:id="test" layoutX="428.0" layoutY="102.0" mnemonicParsing="false" text="Test">
-      <font>
-         <Font size="18.0" />
-      </font>
-   </CheckBox>
-   <Label layoutX="428.0" layoutY="154.0" text="IP server:">
-      <font>
-         <Font size="18.0" />
-      </font>
-   </Label>
-   <TextField fx:id="IP_server" layoutX="428.0" layoutY="181.0" prefHeight="30.0" prefWidth="194.0" AnchorPane.bottomAnchor="166.0" AnchorPane.leftAnchor="428.0" AnchorPane.rightAnchor="29.0" AnchorPane.topAnchor="181.0">
-      <font>
-         <Font size="14.0" />
-      </font>
-   </TextField>
-   <Label layoutX="428.0" layoutY="231.0" text="PORT server:">
-      <font>
-         <Font size="18.0" />
-      </font>
-   </Label>
-   <TextField fx:id="PORT_server" layoutX="428.0" layoutY="258.0" prefHeight="30.0" prefWidth="79.0">
-      <font>
-         <Font size="14.0" />
-      </font>
-   </TextField>
 </AnchorPane>

@@ -1,6 +1,8 @@
-package network;
+package common;
 
-public class ClientProfile {
+import java.io.Serializable;
+
+public class ClientProfile implements Serializable {
 
     private String name;
     private String password;
@@ -10,6 +12,11 @@ public class ClientProfile {
         this.name = name;
         this.password = password;
         this.avatar = avatar;
+    }
+
+    public ClientProfile(String name, String password) {
+        this.name = name;
+        this.password = password;
     }
 
     public String getName() {
