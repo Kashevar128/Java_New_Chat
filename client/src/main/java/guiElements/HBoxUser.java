@@ -7,11 +7,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import common.Operations;
 
-public class HBoxUsers extends HBox {
+public class HBoxUser extends HBox {
     private Label label;
     private Image image;
 
-    public HBoxUsers(Label label, Image image) {
+    public HBoxUser(Label label, Image image) {
         this.label = label;
         this.image = image;
         ImageView imageView = Operations.imageToImageViewConverter(image);
@@ -19,7 +19,7 @@ public class HBoxUsers extends HBox {
         this.getChildren().addAll(imageView, label);
     }
 
-    public HBoxUsers(Label label, byte[] imageByte) {
+    public HBoxUser(Label label, byte[] imageByte) {
         this.label = label;
         this.image = Operations.byteArrayDecodeToImage(imageByte);
         ImageView imageView = Operations.imageToImageViewConverter(image);

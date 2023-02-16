@@ -6,6 +6,7 @@ import messageDTO.Message;
 import messageDTO.TypeMessage;
 import messageDTO.requests.AuthOrRegMessageRequest;
 import messageDTO.respons.AuthOrRegMessageResponse;
+import messageDTO.respons.UpdateUsersResponse;
 import network.*;
 import dataBase.DataBaseImpl;
 
@@ -19,8 +20,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static common.Constants.AUTH;
 import static common.Constants.REG;
@@ -29,7 +33,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
     private static final int WIDTH = 600;
     private static final int HEIGHT = 400;
-    private final ArrayList<TCPConnection> connections = new ArrayList<>();
+    private final Map<TCPConnection, ClientProfile> connections = new HashMap<>();
     private final JTextArea textArea = new JTextArea();
     private final JTextField fieldNickname = new JTextField("Admin");
     private final JTextField fieldInput = new JTextField();
@@ -41,7 +45,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
         setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(null);
-  //      setAlwaysOnTop(true);
+        //      setAlwaysOnTop(true);
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         fieldInput.addActionListener(this);
@@ -108,7 +112,6 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
     @Override
     public void onConnectionReady(TCPConnection tcpConnection) {
-        connections.add(tcpConnection);
         printMsg("Client " + tcpConnection + " connect");
     }
 
@@ -121,6 +124,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
     public void onDisconnect(TCPConnection tcpConnection) throws SocketException {
         tcpConnection.disconnect();
         connections.remove(tcpConnection);
+        updateListUsers(tcpConnection);
         printMsg("Client " + tcpConnection + " disconnect");
     }
 
@@ -141,8 +145,10 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         fieldInput.setText("");
     }
 
-    private void sendAll(Message msg) {
-        connections.forEach((tcpConnection -> onSendPackage(tcpConnection, msg)));
+    private void sendAll(Message msg, TCPConnection tcpConnection) {
+        connections.keySet().stream()
+                .filter(tcpConnection1 -> !tcpConnection1.equals(tcpConnection))
+                .forEach(tcp -> onSendPackage(tcp, msg));
     }
 
     private synchronized void messageClientHandler(Message msg, TCPConnection tcpConnection) {
@@ -158,6 +164,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
                     Function<ClientProfile, Boolean> dataBaseRegFunction = dataBase::reg;
                     authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseRegFunction);
                 }
+
         }
     }
 
@@ -191,13 +198,24 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
             printMsg(nameUser + " authentication complete!");
             byte[] baseAvatar = dataBase.getBaseAvatar(nameUser);
             clientProfile.setAvatar(baseAvatar);
-            message = new AuthOrRegMessageResponse(true, clientProfile);
+            connections.put(tcpConnection, clientProfile);
+            message = new AuthOrRegMessageResponse(true, clientProfile, createUserList());
             onSendPackage(tcpConnection, message);
+            updateListUsers(tcpConnection);
             return;
         }
         message = new AuthOrRegMessageResponse(false);
         onSendPackage(tcpConnection, message);
         printMsg("authentication false!");
+    }
+
+    private void updateListUsers(TCPConnection tcpConnection) {
+        Message msg = new UpdateUsersResponse(createUserList());
+        sendAll(msg, tcpConnection);
+    }
+
+    private List<ClientProfile> createUserList() {
+        return new ArrayList<>(connections.values());
     }
 
 

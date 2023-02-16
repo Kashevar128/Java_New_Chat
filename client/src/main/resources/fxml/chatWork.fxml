@@ -33,7 +33,7 @@
          </children></HBox>
       <VBox layoutY="50.0" prefHeight="550.0" prefWidth="270.0" style="-fx-background-color: 0;" styleClass="gray-background-color" stylesheets="@../values/style.css">
          <children>
-            <ListView prefHeight="561.0" prefWidth="270.0" />
+            <ListView fx:id="listUsers" prefHeight="561.0" prefWidth="270.0" />
          </children></VBox>
       <HBox layoutX="270.0" layoutY="50.0" prefHeight="550.0" prefWidth="5.0" style="-fx-background-color: #46474A;" />
       <VBox layoutX="275.0" layoutY="50.0" prefHeight="550.0" prefWidth="525.0">

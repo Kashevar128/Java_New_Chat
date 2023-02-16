@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import messageDTO.Message;
 import messageDTO.TypeMessage;
 import messageDTO.respons.AuthOrRegMessageResponse;
+import messageDTO.respons.UpdateUsersResponse;
 import network.TCPConnection;
 import network.TCPConnectionListener;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 public class Client implements TCPConnectionListener {
 
@@ -107,6 +109,7 @@ public class Client implements TCPConnectionListener {
                             Image image = Operations.byteArrayDecodeToImage(clientProfile.getAvatar());
                             clientController.setNameLabel(clientProfile.getName());
                             clientController.setUserAva(image);
+                            clientController.updateUsers(authOrRegMessageResponse.getClientProfiles());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -114,6 +117,10 @@ public class Client implements TCPConnectionListener {
                     return;
                 }
                 Platform.runLater(AlertWindowsClass::showAuthFalse);
+
+            case SERVICE_MESSAGE_UPDATE_USERS:
+                UpdateUsersResponse updateUsersResponse = (UpdateUsersResponse) msg;
+                clientController.updateUsers(updateUsersResponse.getProfilesUsers());
         }
     }
 

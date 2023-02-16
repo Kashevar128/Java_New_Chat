@@ -23,6 +23,10 @@ public class ClientGui {
         stage.setTitle("Сетевой чат");
         stage.setScene(new Scene(chat));
         stage.setResizable(false);
+        stage.setOnCloseRequest(windowEvent -> {
+            client.closeConnect();
+        });
+
         stage.show();
 
         ClientController clientController = loader.getController();
