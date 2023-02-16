@@ -142,6 +142,13 @@ public class AlertWindowsClass {
         alert.showAndWait();
     }
 
+    public static void showDataIncorrect() {
+        Alert alert = new Alert(Alert.AlertType.WARNING,
+                "Проверьте заполненность полей", ButtonType.OK);
+        alert.setHeaderText("Неверный формат данных");
+        alert.showAndWait();
+    }
+
 
 
 }

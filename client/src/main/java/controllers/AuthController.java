@@ -11,6 +11,7 @@ import messageDTO.requests.AuthOrRegMessageRequest;
 import java.io.IOException;
 import java.util.function.Function;
 import static common.Constants.AUTH;
+import static controllers.RegController.*;
 
 public class AuthController {
 
@@ -31,7 +32,9 @@ public class AuthController {
     public TextField password;
 
     public void enter(ActionEvent actionEvent) {
-        RegController.authOrReg(login, password, client, sendMsgFun);
+        if (!filter(login, password)) return;
+        authOrReg(login, password, client, sendMsgFun);
+        clearAll(login, password);
     }
 
     public void reg(ActionEvent actionEvent) {

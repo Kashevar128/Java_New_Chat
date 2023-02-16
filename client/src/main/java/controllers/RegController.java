@@ -4,12 +4,16 @@ import client.Client;
 import common.ClientProfile;
 import common.Constants;
 import common.Operations;
+import guiWindows.AlertWindowsClass;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import messageDTO.Message;
 import messageDTO.requests.AuthOrRegMessageRequest;
+
 import java.util.function.Function;
+
 import static common.Constants.REG;
 
 public class RegController {
@@ -24,12 +28,15 @@ public class RegController {
 
     private final Function<ClientProfile, Message> sendMsgFun = (clientProfile) ->
             new AuthOrRegMessageRequest(clientProfile, REG);
+
     public void setClient(Client client) {
         this.client = client;
     }
 
     public void enter(ActionEvent actionEvent) {
+        if (!filter(login, password)) return;
         authOrReg(login, password, client, sendMsgFun);
+        clearAll(login, password);
     }
 
     public void back(ActionEvent actionEvent) {
@@ -47,5 +54,18 @@ public class RegController {
         Message message = sendMsgFun.apply(clientProfile);
         System.out.println(strLogin + ", " + strPass);
         client.sendMsg(message);
+    }
+
+    static boolean filter(TextField login, TextField password) {
+        if (login.getText().isEmpty() || password.getText().isEmpty()) {
+            Platform.runLater(AlertWindowsClass::showDataIncorrect);
+            return false;
+        }
+        return true;
+    }
+
+    static void clearAll(TextField login, TextField password) {
+        login.clear();
+        password.clear();
     }
 }

@@ -114,11 +114,13 @@ public class Client implements TCPConnectionListener {
                             throw new RuntimeException(e);
                         }
                     });
-                    return;
+                    break;
                 }
                 Platform.runLater(AlertWindowsClass::showAuthFalse);
+                break;
 
             case SERVICE_MESSAGE_UPDATE_USERS:
+                assert msg instanceof UpdateUsersResponse;
                 UpdateUsersResponse updateUsersResponse = (UpdateUsersResponse) msg;
                 clientController.updateUsers(updateUsersResponse.getProfilesUsers());
         }

@@ -5,6 +5,7 @@ import common.ClientProfile;
 import messageDTO.Message;
 import messageDTO.TypeMessage;
 import messageDTO.requests.AuthOrRegMessageRequest;
+import messageDTO.requests.VerbalMessageRequest;
 import messageDTO.respons.AuthOrRegMessageResponse;
 import messageDTO.respons.UpdateUsersResponse;
 import network.*;
@@ -153,18 +154,26 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
     private synchronized void messageClientHandler(Message msg, TCPConnection tcpConnection) {
         TypeMessage typeMessage = msg.getTypeMessage();
-        AuthOrRegMessageRequest authOrRegMessageRequest = (AuthOrRegMessageRequest) msg;
         switch (typeMessage) {
             case SERVICE_MESSAGE_AUTH_REG:
+                AuthOrRegMessageRequest authOrRegMessageRequest = (AuthOrRegMessageRequest) msg;
                 if (authOrRegMessageRequest.getOperation() == AUTH) {
                     Function<ClientProfile, Boolean> dataBaseAuthFunction = dataBase::auth;
                     authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseAuthFunction);
+                    break;
                 }
                 if (authOrRegMessageRequest.getOperation() == REG) {
                     Function<ClientProfile, Boolean> dataBaseRegFunction = dataBase::reg;
                     authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseRegFunction);
+                    break;
                 }
 
+            case VERBAL_MESSAGE:
+                assert msg instanceof VerbalMessageRequest;
+                VerbalMessageRequest verbalMessageRequest = (VerbalMessageRequest) msg;
+                String msgStr = verbalMessageRequest.getMessage();
+                String name = verbalMessageRequest.getClientProfile().getName();
+                printMsg(name + ": " + msgStr);
         }
     }
 

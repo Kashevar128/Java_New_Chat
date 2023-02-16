@@ -12,6 +12,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import messageDTO.Message;
+import messageDTO.requests.VerbalMessageRequest;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -38,8 +40,8 @@ public class ClientController {
         System.out.println(input.getText());
         Label bubbleOut = new BubbleOutGoing(input.getText());
         HBoxChat hBoxChat = new HBoxChat(bubbleOut);
-        //   Message message = new Message<>(input.getText(), null, TypeMessage.VERBAL_MESSAGE);
-        //     client.sendMsg(message);
+        Message message = new VerbalMessageRequest(input.getText(), client.getClientProfile());
+        client.sendMsg(message);
         Platform.runLater(() -> {
             listDialog.getItems().add(hBoxChat);
         });
@@ -47,7 +49,7 @@ public class ClientController {
 
     public void updateUsers(List<ClientProfile> listProfiles) {
         Function<ClientProfile, HBoxUser> createHBoxUserFunction =
-                (clientProfile) -> new HBoxUser(new Label(clientProfile.getName()),
+                (clientProfile) -> new HBoxUser((clientProfile.getName()),
                         clientProfile.getAvatar());
         List<HBoxUser> hBoxUsers = listProfiles.stream()
                 .filter(clientProfile -> !clientProfile.getName().equals(client.getClientProfile().getName()))
