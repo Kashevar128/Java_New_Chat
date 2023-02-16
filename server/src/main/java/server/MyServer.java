@@ -1,12 +1,11 @@
 package server;
 
 
-import ava.Avatar;
 import common.ClientProfile;
 import messageDTO.Message;
-import messageDTO.requests.RegistrationMessageRequest;
 import messageDTO.TypeMessage;
-import messageDTO.respons.RegistrationMessageResponse;
+import messageDTO.requests.AuthOrRegMessageRequest;
+import messageDTO.respons.AuthOrRegMessageResponse;
 import network.*;
 import dataBase.DataBaseImpl;
 
@@ -20,6 +19,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static common.Constants.AUTH;
+import static common.Constants.REG;
 
 public class MyServer extends JFrame implements TCPConnectionListener, ActionListener {
 
@@ -37,7 +41,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
         setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(null);
-        setAlwaysOnTop(true);
+  //      setAlwaysOnTop(true);
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         fieldInput.addActionListener(this);
@@ -143,25 +147,17 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
     private synchronized void messageClientHandler(Message msg, TCPConnection tcpConnection) {
         TypeMessage typeMessage = msg.getTypeMessage();
+        AuthOrRegMessageRequest authOrRegMessageRequest = (AuthOrRegMessageRequest) msg;
         switch (typeMessage) {
-            case SERVICE_MESSAGE_REGISTRATION:
-                RegistrationMessageRequest registrationMessageRequest = (RegistrationMessageRequest) msg;
-                ClientProfile clientProfile = registrationMessageRequest.getClientProfile();
-                boolean reg = dataBase.reg(clientProfile);
-                Message message;
-                if (reg) {
-                    String nameUser = registrationMessageRequest.getClientProfile().getName();
-                    printMsg(nameUser + " registration complete!");
-                    byte[] baseAvatar = dataBase.getBaseAvatar(nameUser);
-                    clientProfile.setAvatar(baseAvatar);
-                    message = new RegistrationMessageResponse(true, clientProfile);
-                    onSendPackage(tcpConnection, message);
-                    break;
+            case SERVICE_MESSAGE_AUTH_REG:
+                if (authOrRegMessageRequest.getOperation() == AUTH) {
+                    Function<ClientProfile, Boolean> dataBaseAuthFunction = dataBase::auth;
+                    authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseAuthFunction);
                 }
-                message = new RegistrationMessageResponse(false);
-                onSendPackage(tcpConnection, message);
-                printMsg("registration false!");
-
+                if (authOrRegMessageRequest.getOperation() == REG) {
+                    Function<ClientProfile, Boolean> dataBaseRegFunction = dataBase::reg;
+                    authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseRegFunction);
+                }
         }
     }
 
@@ -184,4 +180,25 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         this.dispose();
         System.exit(0);
     }
+
+    private void authOrReg(AuthOrRegMessageRequest authOrRegMessageRequest, TCPConnection tcpConnection,
+                           Function<ClientProfile, Boolean> dataBaseFunction) {
+        ClientProfile clientProfile = authOrRegMessageRequest.getClientProfile();
+        boolean authOrReg = dataBaseFunction.apply(clientProfile);
+        Message message;
+        if (authOrReg) {
+            String nameUser = authOrRegMessageRequest.getClientProfile().getName();
+            printMsg(nameUser + " authentication complete!");
+            byte[] baseAvatar = dataBase.getBaseAvatar(nameUser);
+            clientProfile.setAvatar(baseAvatar);
+            message = new AuthOrRegMessageResponse(true, clientProfile);
+            onSendPackage(tcpConnection, message);
+            return;
+        }
+        message = new AuthOrRegMessageResponse(false);
+        onSendPackage(tcpConnection, message);
+        printMsg("authentication false!");
+    }
+
+
 }

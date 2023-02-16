@@ -24,18 +24,6 @@ public class AlertWindowsClass {
         alert.showAndWait();
     }
 
-    public static void showRegComplete() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Регистрация прошла успешно.", ButtonType.OK);
-        alert.setHeaderText("Регистрация");
-        alert.showAndWait();
-    }
-
-    public static void showRegFalse() {
-        Alert alert = new Alert(Alert.AlertType.ERROR, "Такой пользователь уже существует.", ButtonType.OK);
-        alert.setHeaderText("Ошибка регистрации");
-        alert.showAndWait();
-    }
-
     public static void showAuthComplete() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION, "Аутентификация прошла успешно.", ButtonType.OK);
         alert.setHeaderText("Аутентификация");

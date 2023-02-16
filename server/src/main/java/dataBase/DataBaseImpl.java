@@ -58,7 +58,6 @@ public class DataBaseImpl implements AuthService, DataBase {
 
     @Override
     public boolean auth(ClientProfile clientProfile) {
-        if (repeatUser(clientProfile.getName())) return false;
         String query = "SELECT * FROM users";
         try (Statement statement = connection.createStatement()) {
             ResultSet rs = statement.executeQuery(query);

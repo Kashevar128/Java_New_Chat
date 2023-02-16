@@ -4,19 +4,19 @@ import common.ClientProfile;
 import messageDTO.Message;
 import messageDTO.TypeMessage;
 
-public class RegistrationMessageResponse implements Message {
+public class AuthOrRegMessageResponse implements Message {
 
-    private final TypeMessage typeMessage = TypeMessage.SERVICE_MESSAGE_REGISTRATION;
+    private final TypeMessage typeMessage = TypeMessage.SERVICE_MESSAGE_AUTH_REG;
 
-    private boolean regOK;
+    private final boolean regOK;
 
     private ClientProfile clientProfile;
 
-    public RegistrationMessageResponse(boolean regOK) {
+    public AuthOrRegMessageResponse(boolean regOK) {
         this.regOK = regOK;
     }
 
-    public RegistrationMessageResponse(boolean regOK, ClientProfile clientProfile) {
+    public AuthOrRegMessageResponse(boolean regOK, ClientProfile clientProfile) {
         this.regOK = regOK;
         this.clientProfile = clientProfile;
     }

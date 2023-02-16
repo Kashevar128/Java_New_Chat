@@ -3,8 +3,11 @@ package common;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import messageDTO.Message;
+import messageDTO.requests.AuthOrRegMessageRequest;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -44,5 +47,6 @@ public class Operations {
         newStr = newStr.replaceAll(" ", "");
         return newStr;
     }
+
 
 }

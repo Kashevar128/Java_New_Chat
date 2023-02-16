@@ -10,7 +10,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import messageDTO.Message;
 import messageDTO.TypeMessage;
-import messageDTO.respons.RegistrationMessageResponse;
+import messageDTO.respons.AuthOrRegMessageResponse;
 import network.TCPConnection;
 import network.TCPConnectionListener;
 import java.io.IOException;
@@ -94,14 +94,15 @@ public class Client implements TCPConnectionListener {
     private void messageServerHandler(Message msg, TCPConnection tcpConnection) {
         TypeMessage typeMessage = msg.getTypeMessage();
         switch (typeMessage){
-            case SERVICE_MESSAGE_REGISTRATION:
-                RegistrationMessageResponse registrationMessageResponse = (RegistrationMessageResponse) msg;
-                if (registrationMessageResponse.isRegOK()) {
-                    clientProfile = registrationMessageResponse.getClientProfile();
+            case SERVICE_MESSAGE_AUTH_REG:
+                AuthOrRegMessageResponse authOrRegMessageResponse = (AuthOrRegMessageResponse) msg;
+                if (authOrRegMessageResponse.isRegOK()) {
+                    clientProfile = authOrRegMessageResponse.getClientProfile();
                     Platform.runLater(() -> {
                         try {
-                            regStage.close();
-                            AlertWindowsClass.showRegComplete();
+                            if (regStage != null) regStage.close();
+                            if (authStage != null) authStage.close();
+                            AlertWindowsClass.showAuthComplete();
                             new ClientGui(this);
                             Image image = Operations.byteArrayDecodeToImage(clientProfile.getAvatar());
                             clientController.setNameLabel(clientProfile.getName());
@@ -112,7 +113,7 @@ public class Client implements TCPConnectionListener {
                     });
                     return;
                 }
-                Platform.runLater(AlertWindowsClass::showRegFalse);
+                Platform.runLater(AlertWindowsClass::showAuthFalse);
         }
     }
 

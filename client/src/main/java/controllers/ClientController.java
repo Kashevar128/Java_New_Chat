@@ -32,7 +32,7 @@ public class ClientController {
         System.out.println(input.getText());
         Label bubbleOut = new BubbleOutGoing(input.getText());
         HBoxChat hBoxChat = new HBoxChat(bubbleOut);
-  //      Message<String> message = new Message<>(input.getText(), null, TypeMessage.VERBAL_MESSAGE);
+        //   Message message = new Message<>(input.getText(), null, TypeMessage.VERBAL_MESSAGE);
    //     client.sendMsg(message);
         Platform.runLater(() -> {
             listDialog.getItems().add(hBoxChat);
