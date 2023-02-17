@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
 import static common.Constants.AUTH;
 import static common.Constants.REG;
 
@@ -64,6 +65,9 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
         printMsg("Server running...");
         printMsg("You have to wait connection");
+        printMsg("To help, enter \"$help\" in the console");
+        printMsg("To start writing to everyone, just start writing");
+        printMsg("If you want to enter a command, start with '$'");
 
         dataBase.start();
 
@@ -149,13 +153,14 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (consoleCommand(fieldInput.getText())) return;
-        VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(fieldInput.getText(), serverProfile);
+        String entry = fieldInput.getText();
+        printMsg(entry);
+        fieldInput.setText("");
+        if (consoleCommand(entry)) return;
+        VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(entry, serverProfile);
         historyMessages.add(verbalMessageResponse);
         Message message = verbalMessageResponse;
         sendAll(message, null);
-        printMsg(fieldInput.getText());
-        fieldInput.setText("");
     }
 
     private void sendAll(Message msg, TCPConnection tcpConnection) {
@@ -204,12 +209,33 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
     }
 
     private boolean consoleCommand(String msg) {
+        if (msg.equals("$help")) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Команды: \n");
+            stringBuilder.append("$help - вызвать помощь \n");
+            stringBuilder.append("$ban <name user> - забанить пользователя \n");
+            stringBuilder.append("$exit - закрыть сервер \n");
+            stringBuilder.append("$clear - очистить консоль сервера \n");
+            stringBuilder.append("$getUsers - показать список пользователей онлайн \n");
+            printMsg(stringBuilder.toString());
+        }
+        if (msg.indexOf("$ban") == 0) {
+            String[] commandArray = msg.split(" ");
+            if (commandArray[0].equals("$ban")) {
+                ban(commandArray[1]);
+            }
+            return true;
+        }
         if (msg.equals("$exit")) {
             closeServer();
             return true;
         }
         if (msg.equals("$clear")) {
             textArea.setText("");
+            return true;
+        }
+        if (msg.equals("$getUsers")) {
+            printAllUsers();
             return true;
         }
         return false;
@@ -247,6 +273,26 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
     private void updateListUsers(TCPConnection tcpConnection) {
         Message msg = new UpdateUsersResponse(createUserList());
         sendAll(msg, tcpConnection);
+    }
+
+    private void printAllUsers() {
+        printMsg(getAllUsers().toString());
+    }
+
+    private List<String> getAllUsers() {
+        return createUserList().stream().map(ClientProfile::getName).toList();
+    }
+
+    private void ban(String name) {
+        List<String> listNames = getAllUsers();
+        if (listNames.contains(name)) {
+            connections.forEach((key, value) -> {
+                if (value.getName().equals(name)) {
+                    key.disconnect();
+                    connections.remove(key);
+                }
+            });
+        }
     }
 
     private List<ClientProfile> createUserList() {

@@ -21,6 +21,7 @@ public class ClientGui {
         stage.setScene(new Scene(chat));
         stage.setResizable(false);
         stage.setOnCloseRequest(windowEvent -> {
+            client.setEmergencyExit(false);
             client.closeConnect();
         });
 
@@ -29,6 +30,7 @@ public class ClientGui {
         ClientController clientController = loader.getController();
         clientController.setClient(client);
         client.setClientController(clientController);
+        client.setClientStage(stage);
     }
 
     public void setClient(Client client) {

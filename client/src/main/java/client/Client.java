@@ -30,8 +30,10 @@ public class Client implements TCPConnectionListener {
     private TCPConnection connection;
     private Stage authStage;
     private Stage regStage;
+    private Stage clientStage;
     private ClientController clientController;
     private ClientProfile clientProfile;
+    private boolean emergencyExit = true;
 
     static {
         try {
@@ -50,6 +52,14 @@ public class Client implements TCPConnectionListener {
         }
     }
 
+    public void setClientStage(Stage clientStage) {
+        this.clientStage = clientStage;
+    }
+
+    public void setEmergencyExit(boolean emergencyExit) {
+        this.emergencyExit = emergencyExit;
+    }
+
     public void setAuthStage(Stage authStage) {
         this.authStage = authStage;
     }
@@ -64,6 +74,14 @@ public class Client implements TCPConnectionListener {
 
     public ClientProfile getClientProfile() {
         return clientProfile;
+    }
+
+    public Stage getClientStage() {
+        return clientStage;
+    }
+
+    public boolean isEmergencyExit() {
+        return emergencyExit;
     }
 
     @Override
@@ -84,6 +102,10 @@ public class Client implements TCPConnectionListener {
 
     @Override
     public void onException(TCPConnection tcpConnection, Exception e) {
+        if (this.isEmergencyExit()) {
+            Platform.runLater(AlertWindowsClass::showFallsConnectAlert);
+            closeGUI();
+        }
         System.out.println(tcpConnection);
         e.printStackTrace();
     }
@@ -103,8 +125,7 @@ public class Client implements TCPConnectionListener {
                     clientProfile = authOrRegMessageResponse.getClientProfile();
                     Platform.runLater(() -> {
                         try {
-                            if (regStage != null) regStage.close();
-                            if (authStage != null) authStage.close();
+                            closeGUI();
                             AlertWindowsClass.showAuthComplete();
                             new ClientGui(this);
                             Image image = Operations.byteArrayDecodeToImage(clientProfile.getAvatar());
@@ -141,5 +162,13 @@ public class Client implements TCPConnectionListener {
 
     public void closeConnect() {
         connection.disconnect();
+    }
+
+    private void closeGUI() {
+        Platform.runLater(() -> {
+            if (regStage != null) regStage.close();
+            if (authStage != null) authStage.close();
+            if (clientStage != null) clientStage.close();
+        });
     }
 }

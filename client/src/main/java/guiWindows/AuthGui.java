@@ -29,6 +29,7 @@ public class AuthGui {
         client.setAuthStage(stage);
 
         stage.setOnCloseRequest(windowEvent -> {
+            client.setEmergencyExit(false);
             client.closeConnect();
         });
 

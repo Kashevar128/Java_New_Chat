@@ -6,6 +6,6 @@ import java.nio.file.Files;
 public class LaunchServer {
 
     public static void main(String[] args) throws IOException {
-            new MyServer();
+        new MyServer();
     }
 }
