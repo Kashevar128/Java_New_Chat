@@ -8,6 +8,7 @@ import messageDTO.requests.AuthOrRegMessageRequest;
 import messageDTO.requests.VerbalMessageRequest;
 import messageDTO.respons.AuthOrRegMessageResponse;
 import messageDTO.respons.UpdateUsersResponse;
+import messageDTO.respons.VerbalMessageResponse;
 import network.*;
 import dataBase.DataBaseImpl;
 
@@ -17,16 +18,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import static common.Constants.AUTH;
 import static common.Constants.REG;
 
@@ -35,13 +36,16 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
     private static final int WIDTH = 600;
     private static final int HEIGHT = 400;
     private final Map<TCPConnection, ClientProfile> connections = new HashMap<>();
+    private final List<VerbalMessageResponse> historyMessages = new ArrayList<>();
+    private final File imageAdmin = new File("server/src/main/resources/img/544_oooo.plus.png");
+    private ClientProfile serverProfile = null;
     private final JTextArea textArea = new JTextArea();
     private final JTextField fieldNickname = new JTextField("Admin");
     private final JTextField fieldInput = new JTextField();
     private TCPConnection connection = null;
     private final DataBaseImpl dataBase = new DataBaseImpl();
 
-    public MyServer() throws HeadlessException {
+    public MyServer() throws HeadlessException, IOException {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         setSize(WIDTH, HEIGHT);
@@ -62,6 +66,9 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         printMsg("You have to wait connection");
 
         dataBase.start();
+
+        byte[] bytesImage = Files.readAllBytes(imageAdmin.toPath());
+        serverProfile = new ClientProfile("Admin", null, bytesImage);
 
         this.addWindowListener(new WindowListener() {
             @Override
@@ -142,6 +149,11 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (consoleCommand(fieldInput.getText())) return;
+        VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(fieldInput.getText(), serverProfile);
+        historyMessages.add(verbalMessageResponse);
+        Message message = verbalMessageResponse;
+        sendAll(message, null);
         printMsg(fieldInput.getText());
         fieldInput.setText("");
     }
@@ -156,6 +168,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         TypeMessage typeMessage = msg.getTypeMessage();
         switch (typeMessage) {
             case SERVICE_MESSAGE_AUTH_REG:
+                assert msg instanceof AuthOrRegMessageRequest;
                 AuthOrRegMessageRequest authOrRegMessageRequest = (AuthOrRegMessageRequest) msg;
                 if (authOrRegMessageRequest.getOperation() == AUTH) {
                     Function<ClientProfile, Boolean> dataBaseAuthFunction = dataBase::auth;
@@ -167,6 +180,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
                     authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseRegFunction);
                     break;
                 }
+                break;
 
             case VERBAL_MESSAGE:
                 assert msg instanceof VerbalMessageRequest;
@@ -174,19 +188,31 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
                 String msgStr = verbalMessageRequest.getMessage();
                 String name = verbalMessageRequest.getClientProfile().getName();
                 printMsg(name + ": " + msgStr);
+                VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(msgStr,
+                        verbalMessageRequest.getClientProfile());
+                historyMessages.add(verbalMessageResponse);
+                sendAll(verbalMessageResponse, tcpConnection);
         }
     }
 
     private synchronized void printMsg(String msg) {
-        consoleCommand(msg);
         SwingUtilities.invokeLater(() -> {
+            if (msg.equals("$clear")) return;
             textArea.append(msg + "\n");
             textArea.setCaretPosition(textArea.getDocument().getLength());
         });
     }
 
-    private void consoleCommand(String msg) {
-        if (msg.equals("exit")) closeServer();
+    private boolean consoleCommand(String msg) {
+        if (msg.equals("$exit")) {
+            closeServer();
+            return true;
+        }
+        if (msg.equals("$clear")) {
+            textArea.setText("");
+            return true;
+        }
+        return false;
     }
 
     private void closeServer() {
@@ -208,7 +234,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
             byte[] baseAvatar = dataBase.getBaseAvatar(nameUser);
             clientProfile.setAvatar(baseAvatar);
             connections.put(tcpConnection, clientProfile);
-            message = new AuthOrRegMessageResponse(true, clientProfile, createUserList());
+            message = new AuthOrRegMessageResponse(true, clientProfile, createUserList(), historyMessages);
             onSendPackage(tcpConnection, message);
             updateListUsers(tcpConnection);
             return;

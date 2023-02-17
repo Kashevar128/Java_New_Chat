@@ -14,16 +14,21 @@ public class AuthOrRegMessageResponse implements Message {
 
     private List<ClientProfile> clientProfiles;
 
+    private List<VerbalMessageResponse> listDialogs;
+
     private ClientProfile clientProfile;
 
     public AuthOrRegMessageResponse(boolean regOK) {
         this.regOK = regOK;
     }
 
-    public AuthOrRegMessageResponse(boolean regOK, ClientProfile clientProfile,List<ClientProfile> clientProfiles) {
+    public AuthOrRegMessageResponse(boolean regOK, ClientProfile clientProfile,
+                                    List<ClientProfile> clientProfiles,
+                                    List<VerbalMessageResponse> listDialogs) {
         this.regOK = regOK;
         this.clientProfile = clientProfile;
         this.clientProfiles = clientProfiles;
+        this.listDialogs = listDialogs;
     }
 
     @Override
@@ -41,5 +46,9 @@ public class AuthOrRegMessageResponse implements Message {
 
     public List<ClientProfile> getClientProfiles() {
         return clientProfiles;
+    }
+
+    public List<VerbalMessageResponse> getListDialogs() {
+        return listDialogs;
     }
 }

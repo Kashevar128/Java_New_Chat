@@ -4,7 +4,7 @@ import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 
 public class BubbleOutGoing extends Label {
-    private final String stylesOutGoingLabel = "-fx-background-color: #D3EEDF;" +
+    private final String stylesOutGoingLabel = "-fx-background-color: #afdec4;" +
             "-fx-background-radius: 25px;" + "-fx-background-insets: -10;";
 
     public BubbleOutGoing(String msg) {

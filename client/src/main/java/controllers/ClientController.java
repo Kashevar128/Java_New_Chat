@@ -2,6 +2,7 @@ package controllers;
 
 import client.Client;
 import common.ClientProfile;
+import guiElements.BubbleInGoing;
 import guiElements.BubbleOutGoing;
 import guiElements.HBoxChat;
 import guiElements.HBoxUser;
@@ -14,9 +15,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import messageDTO.Message;
 import messageDTO.requests.VerbalMessageRequest;
+import messageDTO.respons.VerbalMessageResponse;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,9 +38,8 @@ public class ClientController {
     }
 
     public void send() {
-        System.out.println(input.getText());
         Label bubbleOut = new BubbleOutGoing(input.getText());
-        HBoxChat hBoxChat = new HBoxChat(bubbleOut);
+        HBoxChat hBoxChat = new HBoxChat(bubbleOut, client.getClientProfile().getAvatar());
         Message message = new VerbalMessageRequest(input.getText(), client.getClientProfile());
         client.sendMsg(message);
         Platform.runLater(() -> {
@@ -53,12 +53,32 @@ public class ClientController {
                         clientProfile.getAvatar());
         List<HBoxUser> hBoxUsers = listProfiles.stream()
                 .filter(clientProfile -> !clientProfile.getName().equals(client.getClientProfile().getName()))
-                .map(createHBoxUserFunction)
-                .collect(Collectors.toList());
+                .map(createHBoxUserFunction).toList();
         Platform.runLater(() -> {
             listUsers.getItems().clear();
             listUsers.getItems().addAll(hBoxUsers);
         });
+    }
+
+    public void updateListDialog(List<VerbalMessageResponse> verbalMessageResponseList) {
+        List<HBoxChat> hBoxChats = verbalMessageResponseList.stream().map(verbalMessageResponse -> {
+            String message = verbalMessageResponse.getMessage();
+            ClientProfile clientProfile = verbalMessageResponse.getClientProfile();
+            Label label;
+            if (clientProfile.getName().equals(client.getClientProfile().getName())) {
+                label = new BubbleOutGoing(message);
+            } else {
+                label = new BubbleInGoing(message);
+            }
+            return new HBoxChat(label, clientProfile.getAvatar());
+        }).toList();
+        Platform.runLater(() -> listDialog.getItems().addAll(hBoxChats));
+    }
+
+    public void addToListDialog(String msg, byte[] image) {
+        BubbleInGoing bubbleInGoing = new BubbleInGoing(msg);
+        HBoxChat hBoxChat = new HBoxChat(bubbleInGoing, image);
+        Platform.runLater(() -> listDialog.getItems().add(hBoxChat));
     }
 
     public void setNameLabel(String name) {

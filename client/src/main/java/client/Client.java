@@ -12,6 +12,7 @@ import messageDTO.Message;
 import messageDTO.TypeMessage;
 import messageDTO.respons.AuthOrRegMessageResponse;
 import messageDTO.respons.UpdateUsersResponse;
+import messageDTO.respons.VerbalMessageResponse;
 import network.TCPConnection;
 import network.TCPConnectionListener;
 import java.io.IOException;
@@ -19,7 +20,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.List;
 
 public class Client implements TCPConnectionListener {
 
@@ -97,6 +97,7 @@ public class Client implements TCPConnectionListener {
         TypeMessage typeMessage = msg.getTypeMessage();
         switch (typeMessage){
             case SERVICE_MESSAGE_AUTH_REG:
+                assert msg instanceof AuthOrRegMessageResponse;
                 AuthOrRegMessageResponse authOrRegMessageResponse = (AuthOrRegMessageResponse) msg;
                 if (authOrRegMessageResponse.isRegOK()) {
                     clientProfile = authOrRegMessageResponse.getClientProfile();
@@ -110,6 +111,7 @@ public class Client implements TCPConnectionListener {
                             clientController.setNameLabel(clientProfile.getName());
                             clientController.setUserAva(image);
                             clientController.updateUsers(authOrRegMessageResponse.getClientProfiles());
+                            clientController.updateListDialog(authOrRegMessageResponse.getListDialogs());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -123,6 +125,13 @@ public class Client implements TCPConnectionListener {
                 assert msg instanceof UpdateUsersResponse;
                 UpdateUsersResponse updateUsersResponse = (UpdateUsersResponse) msg;
                 clientController.updateUsers(updateUsersResponse.getProfilesUsers());
+                break;
+
+            case VERBAL_MESSAGE:
+                assert msg instanceof VerbalMessageResponse;
+                VerbalMessageResponse verbalMessageResponse = (VerbalMessageResponse) msg;
+                clientController.addToListDialog(verbalMessageResponse.getMessage(),
+                        verbalMessageResponse.getClientProfile().getAvatar());
         }
     }
 
