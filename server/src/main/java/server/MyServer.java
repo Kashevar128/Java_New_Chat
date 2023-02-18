@@ -56,6 +56,9 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         textArea.setLineWrap(true);
         fieldInput.addActionListener(this);
 
+        fieldInput.setFont(new Font("Dialog", Font.PLAIN, 18));
+        textArea.setFont(new Font("Dialog", Font.PLAIN, 18));
+
         add(textArea, BorderLayout.CENTER);
         add(fieldInput, BorderLayout.SOUTH);
         add(fieldNickname, BorderLayout.NORTH);
@@ -64,10 +67,10 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         setVisible(true);
 
         printMsg("Server running...");
-        printMsg("You have to wait connection");
-        printMsg("To help, enter \"$help\" in the console");
-        printMsg("To start writing to everyone, just start writing");
-        printMsg("If you want to enter a command, start with '$'");
+        printMsg("You have to wait connection.");
+        printMsg("To help, enter \"$help\" in the console.");
+        printMsg("To start writing to everyone, just start writing.");
+        printMsg("If you want to enter a command, start with '$'.");
 
         dataBase.start();
 

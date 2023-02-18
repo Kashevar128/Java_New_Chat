@@ -41,6 +41,7 @@ public class ClientController {
         Label bubbleOut = new BubbleOutGoing(input.getText());
         HBoxChat hBoxChat = new HBoxChat(bubbleOut, client.getClientProfile().getAvatar());
         Message message = new VerbalMessageRequest(input.getText(), client.getClientProfile());
+        input.clear();
         client.sendMsg(message);
         Platform.runLater(() -> {
             listDialog.getItems().add(hBoxChat);

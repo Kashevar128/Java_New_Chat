@@ -2,11 +2,15 @@ package guiWindows;
 
 import client.Client;
 import controllers.ClientController;
+import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import java.io.IOException;
+
+import static javafx.scene.input.MouseEvent.MOUSE_CLICKED;
 
 public class ClientGui {
     private Stage stage;
@@ -31,6 +35,14 @@ public class ClientGui {
         clientController.setClient(client);
         client.setClientController(clientController);
         client.setClientStage(stage);
+        clientController.input.setOnAction(actionEvent -> {
+            clientController.send();
+        });
+        clientController.input.setFont(new Font("Arial", 20));
+        clientController.listDialog.setSelectionModel(null);
+        clientController.listUsers.setSelectionModel(null);
+
+
     }
 
     public void setClient(Client client) {

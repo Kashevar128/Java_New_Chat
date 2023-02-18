@@ -11,7 +11,7 @@ public class BubbleInGoing extends Label {
         this.setText(msg);
         this.setStyle(stylesInGoingLabel);
         this.setFont(new Font("Arial", 16));
-        this.setMaxWidth(450);
+        this.setMaxWidth(350);
         this.setWrapText(true);
     }
 
