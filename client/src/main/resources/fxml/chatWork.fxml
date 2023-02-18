@@ -30,6 +30,14 @@
                   <Font size="20.0" />
                </font>
             </Label>
+            <Button fx:id="exitButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" onAction="#exitClient">
+               <HBox.margin>
+                  <Insets left="400.0" />
+               </HBox.margin>
+               <graphic>
+                  <ImageView fx:id="exitImage" fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" />
+               </graphic>
+            </Button>
          </children></HBox>
       <VBox layoutY="50.0" prefHeight="550.0" prefWidth="270.0" style="-fx-background-color: 0;" styleClass="gray-background-color" stylesheets="@../values/style.css">
          <children>
@@ -50,7 +58,13 @@
             <HBox prefHeight="60.0" prefWidth="525.0">
                <children>
                   <TextField fx:id="input" prefHeight="60.0" prefWidth="460.0" />
-                  <Button mnemonicParsing="false" onAction="#send" prefHeight="60.0" prefWidth="65.0" text="SEND" />
+                  <Button mnemonicParsing="false" onAction="#send" prefHeight="60.0" prefWidth="60.0">
+                     <graphic>
+                        <ImageView fx:id="sendImage" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true" />
+                     </graphic>
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin></Button>
                </children>
             </HBox>
          </children></VBox>

@@ -8,6 +8,7 @@ import guiElements.HBoxChat;
 import guiElements.HBoxUser;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -19,7 +20,6 @@ import messageDTO.respons.VerbalMessageResponse;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 public class ClientController {
@@ -30,11 +30,21 @@ public class ClientController {
     public TextField input;
     public ListView<HBoxUser> listUsers;
     public ListView<HBoxChat> listDialog;
-
+    public ImageView sendImage;
+    public Button exitButton;
+    public ImageView exitImage;
     private Client client;
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public void setNameLabel(String name) {
+        Platform.runLater(() -> nameLabel.setText(name));
+    }
+
+    public void setUserAva(Image ava) {
+        Platform.runLater(() -> userAva.setImage(ava));
     }
 
     public void send() {
@@ -82,12 +92,10 @@ public class ClientController {
         Platform.runLater(() -> listDialog.getItems().add(hBoxChat));
     }
 
-    public void setNameLabel(String name) {
-        Platform.runLater(() -> nameLabel.setText(name));
-    }
-
-    public void setUserAva(Image ava) {
-        Platform.runLater(() -> userAva.setImage(ava));
+    public void exitClient() {
+        client.setEmergencyExit(false);
+        client.closeConnect();
+        client.getClientStage().close();
     }
 
     public void addUserToList(HBoxUser hBoxUser) {
