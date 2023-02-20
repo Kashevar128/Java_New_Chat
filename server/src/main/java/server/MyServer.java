@@ -71,6 +71,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         printMsg("To help, enter \"$help\" in the console.");
         printMsg("To start writing to everyone, just start writing.");
         printMsg("If you want to enter a command, start with '$'.");
+        printMsg("_________________________________________________________");
 
         dataBase.start();
 
