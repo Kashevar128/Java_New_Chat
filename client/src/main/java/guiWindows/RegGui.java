@@ -28,6 +28,7 @@ public class RegGui {
         client.setRegStage(stage);
 
         stage.setOnCloseRequest(windowEvent -> {
+            client.setEmergencyExit(false);
             client.closeConnect();
         });
 

@@ -8,6 +8,7 @@ import messageDTO.requests.AuthOrRegMessageRequest;
 import messageDTO.requests.VerbalMessageRequest;
 import messageDTO.respons.AuthOrRegMessageResponse;
 import messageDTO.respons.UpdateUsersResponse;
+import messageDTO.respons.VerbalMessageResponse;
 import network.*;
 import dataBase.DataBaseImpl;
 
@@ -17,15 +18,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static common.Constants.AUTH;
 import static common.Constants.REG;
@@ -35,13 +37,16 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
     private static final int WIDTH = 600;
     private static final int HEIGHT = 400;
     private final Map<TCPConnection, ClientProfile> connections = new HashMap<>();
+    private final List<VerbalMessageResponse> historyMessages = new ArrayList<>();
+    private final File imageAdmin = new File("server/src/main/resources/img/544_oooo.plus.png");
+    private ClientProfile serverProfile = null;
     private final JTextArea textArea = new JTextArea();
     private final JTextField fieldNickname = new JTextField("Admin");
     private final JTextField fieldInput = new JTextField();
     private TCPConnection connection = null;
     private final DataBaseImpl dataBase = new DataBaseImpl();
 
-    public MyServer() throws HeadlessException {
+    public MyServer() throws HeadlessException, IOException {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         setSize(WIDTH, HEIGHT);
@@ -51,6 +56,9 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         textArea.setLineWrap(true);
         fieldInput.addActionListener(this);
 
+        fieldInput.setFont(new Font("Dialog", Font.PLAIN, 18));
+        textArea.setFont(new Font("Dialog", Font.PLAIN, 18));
+
         add(textArea, BorderLayout.CENTER);
         add(fieldInput, BorderLayout.SOUTH);
         add(fieldNickname, BorderLayout.NORTH);
@@ -59,9 +67,15 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         setVisible(true);
 
         printMsg("Server running...");
-        printMsg("You have to wait connection");
+        printMsg("You have to wait connection.");
+        printMsg("To help, enter \"$help\" in the console.");
+        printMsg("To start writing to everyone, just start writing.");
+        printMsg("If you want to enter a command, start with '$'.");
 
         dataBase.start();
+
+        byte[] bytesImage = Files.readAllBytes(imageAdmin.toPath());
+        serverProfile = new ClientProfile("Admin", null, bytesImage);
 
         this.addWindowListener(new WindowListener() {
             @Override
@@ -142,8 +156,14 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        printMsg(fieldInput.getText());
+        String entry = fieldInput.getText();
+        printMsg(entry);
         fieldInput.setText("");
+        if (consoleCommand(entry)) return;
+        VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(entry, serverProfile);
+        historyMessages.add(verbalMessageResponse);
+        Message message = verbalMessageResponse;
+        sendAll(message, null);
     }
 
     private void sendAll(Message msg, TCPConnection tcpConnection) {
@@ -156,6 +176,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         TypeMessage typeMessage = msg.getTypeMessage();
         switch (typeMessage) {
             case SERVICE_MESSAGE_AUTH_REG:
+                assert msg instanceof AuthOrRegMessageRequest;
                 AuthOrRegMessageRequest authOrRegMessageRequest = (AuthOrRegMessageRequest) msg;
                 if (authOrRegMessageRequest.getOperation() == AUTH) {
                     Function<ClientProfile, Boolean> dataBaseAuthFunction = dataBase::auth;
@@ -167,6 +188,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
                     authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseRegFunction);
                     break;
                 }
+                break;
 
             case VERBAL_MESSAGE:
                 assert msg instanceof VerbalMessageRequest;
@@ -174,19 +196,52 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
                 String msgStr = verbalMessageRequest.getMessage();
                 String name = verbalMessageRequest.getClientProfile().getName();
                 printMsg(name + ": " + msgStr);
+                VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(msgStr,
+                        verbalMessageRequest.getClientProfile());
+                historyMessages.add(verbalMessageResponse);
+                sendAll(verbalMessageResponse, tcpConnection);
         }
     }
 
     private synchronized void printMsg(String msg) {
-        consoleCommand(msg);
         SwingUtilities.invokeLater(() -> {
+            if (msg.equals("$clear")) return;
             textArea.append(msg + "\n");
             textArea.setCaretPosition(textArea.getDocument().getLength());
         });
     }
 
-    private void consoleCommand(String msg) {
-        if (msg.equals("exit")) closeServer();
+    private boolean consoleCommand(String msg) {
+        if (msg.equals("$help")) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Команды: \n");
+            stringBuilder.append("$help - вызвать помощь \n");
+            stringBuilder.append("$ban <name user> - забанить пользователя \n");
+            stringBuilder.append("$exit - закрыть сервер \n");
+            stringBuilder.append("$clear - очистить консоль сервера \n");
+            stringBuilder.append("$getUsers - показать список пользователей онлайн \n");
+            printMsg(stringBuilder.toString());
+        }
+        if (msg.indexOf("$ban") == 0) {
+            String[] commandArray = msg.split(" ");
+            if (commandArray[0].equals("$ban")) {
+                ban(commandArray[1]);
+            }
+            return true;
+        }
+        if (msg.equals("$exit")) {
+            closeServer();
+            return true;
+        }
+        if (msg.equals("$clear")) {
+            textArea.setText("");
+            return true;
+        }
+        if (msg.equals("$getUsers")) {
+            printAllUsers();
+            return true;
+        }
+        return false;
     }
 
     private void closeServer() {
@@ -208,7 +263,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
             byte[] baseAvatar = dataBase.getBaseAvatar(nameUser);
             clientProfile.setAvatar(baseAvatar);
             connections.put(tcpConnection, clientProfile);
-            message = new AuthOrRegMessageResponse(true, clientProfile, createUserList());
+            message = new AuthOrRegMessageResponse(true, clientProfile, createUserList(), historyMessages);
             onSendPackage(tcpConnection, message);
             updateListUsers(tcpConnection);
             return;
@@ -221,6 +276,26 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
     private void updateListUsers(TCPConnection tcpConnection) {
         Message msg = new UpdateUsersResponse(createUserList());
         sendAll(msg, tcpConnection);
+    }
+
+    private void printAllUsers() {
+        printMsg(getAllUsers().toString());
+    }
+
+    private List<String> getAllUsers() {
+        return createUserList().stream().map(ClientProfile::getName).toList();
+    }
+
+    private void ban(String name) {
+        List<String> listNames = getAllUsers();
+        if (listNames.contains(name)) {
+            connections.forEach((key, value) -> {
+                if (value.getName().equals(name)) {
+                    key.disconnect();
+                    connections.remove(key);
+                }
+            });
+        }
     }
 
     private List<ClientProfile> createUserList() {
