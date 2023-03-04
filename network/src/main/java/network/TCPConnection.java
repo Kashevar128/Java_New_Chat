@@ -64,6 +64,8 @@ public class TCPConnection {
     public synchronized void disconnect() {
         readThread.interrupt();
         try {
+            inObj.close();
+            outObj.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();

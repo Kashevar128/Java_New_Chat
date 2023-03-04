@@ -2,6 +2,7 @@ package server;
 
 
 import common.ClientProfile;
+import controllers.ServerConsoleController;
 import messageDTO.Message;
 import messageDTO.TypeMessage;
 import messageDTO.requests.AuthOrRegMessageRequest;
@@ -11,13 +12,7 @@ import messageDTO.respons.UpdateUsersResponse;
 import messageDTO.respons.VerbalMessageResponse;
 import network.*;
 import dataBase.DataBaseImpl;
-
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -32,103 +27,41 @@ import java.util.function.Function;
 import static common.Constants.AUTH;
 import static common.Constants.REG;
 
-public class MyServer extends JFrame implements TCPConnectionListener, ActionListener {
-
-    private static final int WIDTH = 600;
-    private static final int HEIGHT = 400;
+public class MyServer implements TCPConnectionListener {
     private final Map<TCPConnection, ClientProfile> connections = new HashMap<>();
     private final List<VerbalMessageResponse> historyMessages = new ArrayList<>();
     private final File imageAdmin = new File("server/src/main/resources/img/544_oooo.plus.png");
     private ClientProfile serverProfile = null;
-    private final JTextArea textArea = new JTextArea();
-    private final JTextField fieldNickname = new JTextField("Admin");
-    private final JTextField fieldInput = new JTextField();
     private TCPConnection connection = null;
     private final DataBaseImpl dataBase = new DataBaseImpl();
+    private ServerConsoleController serverConsoleController;
+    private Thread thread;
 
     public MyServer() throws HeadlessException, IOException {
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        setSize(WIDTH, HEIGHT);
-        setLocationRelativeTo(null);
-        //      setAlwaysOnTop(true);
-        textArea.setEditable(false);
-        textArea.setLineWrap(true);
-        fieldInput.addActionListener(this);
-
-        fieldInput.setFont(new Font("Dialog", Font.PLAIN, 18));
-        textArea.setFont(new Font("Dialog", Font.PLAIN, 18));
-
-        add(textArea, BorderLayout.CENTER);
-        add(fieldInput, BorderLayout.SOUTH);
-        add(fieldNickname, BorderLayout.NORTH);
-        setResizable(false);
-
-        setVisible(true);
-
-        printMsg("Server running...");
-        printMsg("You have to wait connection.");
-        printMsg("To help, enter \"$help\" in the console.");
-        printMsg("To start writing to everyone, just start writing.");
-        printMsg("If you want to enter a command, start with '$'.");
-        printMsg("_________________________________________________________");
 
         dataBase.start();
 
         byte[] bytesImage = Files.readAllBytes(imageAdmin.toPath());
         serverProfile = new ClientProfile("Admin", null, bytesImage);
 
-        this.addWindowListener(new WindowListener() {
-            @Override
-            public void windowOpened(WindowEvent e) {
-
-            }
-
-            @Override
-            public void windowClosing(WindowEvent e) {
-                dataBase.stop();
-            }
-
-            @Override
-            public void windowClosed(WindowEvent e) {
-                dataBase.stop();
-            }
-
-            @Override
-            public void windowIconified(WindowEvent e) {
-
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-
-            }
-
-            @Override
-            public void windowActivated(WindowEvent e) {
-
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent e) {
-
+        thread = new Thread(() -> {
+            try (ServerSocket serverSocket = new ServerSocket(8189)) {
+                while (true) {
+                    connection = new TCPConnection(serverSocket.accept(), this);
+                }
+            } catch (IOException e) {
+                serverConsoleController.printMsg("Client kicked");
             }
         });
 
-        try (ServerSocket serverSocket = new ServerSocket(8189)) {
-            while (true) {
-                connection = new TCPConnection(serverSocket.accept(), this);
-            }
-        } catch (IOException e) {
-            printMsg("Client kicked");
-        }
+        thread.start();
 
 
     }
 
     @Override
     public void onConnectionReady(TCPConnection tcpConnection) {
-        printMsg("Client " + tcpConnection + " connect");
+        serverConsoleController.printMsg("Client " + tcpConnection + " connect");
     }
 
     @Override
@@ -141,7 +74,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         tcpConnection.disconnect();
         connections.remove(tcpConnection);
         updateListUsers(tcpConnection);
-        printMsg("Client " + tcpConnection + " disconnect");
+        serverConsoleController.printMsg("Client " + tcpConnection + " disconnect");
     }
 
     @Override
@@ -155,16 +88,12 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         tcpConnection.sendMessage(msg);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String entry = fieldInput.getText();
-        printMsg(entry);
-        fieldInput.setText("");
-        if (consoleCommand(entry)) return;
+    public void actionPerformed(String entry) {
+        consoleCommand(entry);
+        if (entry.startsWith("$")) return;
         VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(entry, serverProfile);
         historyMessages.add(verbalMessageResponse);
-        Message message = verbalMessageResponse;
-        sendAll(message, null);
+        sendAll(verbalMessageResponse, null);
     }
 
     private void sendAll(Message msg, TCPConnection tcpConnection) {
@@ -196,7 +125,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
                 VerbalMessageRequest verbalMessageRequest = (VerbalMessageRequest) msg;
                 String msgStr = verbalMessageRequest.getMessage();
                 String name = verbalMessageRequest.getClientProfile().getName();
-                printMsg(name + ": " + msgStr);
+                serverConsoleController.printMsg(name + ": " + msgStr);
                 VerbalMessageResponse verbalMessageResponse = new VerbalMessageResponse(msgStr,
                         verbalMessageRequest.getClientProfile());
                 historyMessages.add(verbalMessageResponse);
@@ -204,52 +133,53 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         }
     }
 
-    private synchronized void printMsg(String msg) {
-        SwingUtilities.invokeLater(() -> {
-            if (msg.equals("$clear")) return;
-            textArea.append(msg + "\n");
-            textArea.setCaretPosition(textArea.getDocument().getLength());
-        });
-    }
-
-    private boolean consoleCommand(String msg) {
+    private void consoleCommand(String msg) {
         if (msg.equals("$help")) {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("Команды: \n");
             stringBuilder.append("$help - вызвать помощь \n");
-            stringBuilder.append("$ban <name user> - забанить пользователя \n");
+            stringBuilder.append("$ban <name user> - разорвать связь с пользователем \n");
             stringBuilder.append("$exit - закрыть сервер \n");
             stringBuilder.append("$clear - очистить консоль сервера \n");
             stringBuilder.append("$getUsers - показать список пользователей онлайн \n");
-            printMsg(stringBuilder.toString());
+            serverConsoleController.printMsg(stringBuilder.toString());
+            return;
         }
         if (msg.indexOf("$ban") == 0) {
             String[] commandArray = msg.split(" ");
             if (commandArray[0].equals("$ban")) {
                 ban(commandArray[1]);
             }
-            return true;
+            return;
         }
         if (msg.equals("$exit")) {
             closeServer();
-            return true;
+            return;
         }
         if (msg.equals("$clear")) {
-            textArea.setText("");
-            return true;
+            serverConsoleController.clearLog();
+            return;
         }
         if (msg.equals("$getUsers")) {
             printAllUsers();
-            return true;
+            return;
         }
-        return false;
+        serverConsoleController.printMsg("Неизвестная команда");
     }
 
-    private void closeServer() {
+    private void closeConnect() {
         if (connection != null) {
             connection.disconnect();
         }
-        this.dispose();
+    }
+
+    private void closeData() {
+        dataBase.stop();
+    }
+
+    public void closeServer() {
+        closeConnect();
+        closeData();
         System.exit(0);
     }
 
@@ -260,7 +190,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         Message message;
         if (authOrReg) {
             String nameUser = authOrRegMessageRequest.getClientProfile().getName();
-            printMsg(nameUser + " authentication complete!");
+            serverConsoleController.printMsg(nameUser + " authentication complete!");
             byte[] baseAvatar = dataBase.getBaseAvatar(nameUser);
             clientProfile.setAvatar(baseAvatar);
             connections.put(tcpConnection, clientProfile);
@@ -271,7 +201,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         }
         message = new AuthOrRegMessageResponse(false);
         onSendPackage(tcpConnection, message);
-        printMsg("authentication false!");
+        serverConsoleController.printMsg("authentication false!");
     }
 
     private void updateListUsers(TCPConnection tcpConnection) {
@@ -280,7 +210,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
     }
 
     private void printAllUsers() {
-        printMsg(getAllUsers().toString());
+        serverConsoleController.printMsg(getAllUsers().toString());
     }
 
     private List<String> getAllUsers() {
@@ -303,5 +233,7 @@ public class MyServer extends JFrame implements TCPConnectionListener, ActionLis
         return new ArrayList<>(connections.values());
     }
 
-
+    public void setServerConsoleController(ServerConsoleController serverConsoleController) {
+        this.serverConsoleController = serverConsoleController;
+    }
 }
