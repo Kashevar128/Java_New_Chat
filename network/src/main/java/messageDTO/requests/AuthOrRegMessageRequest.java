@@ -1,6 +1,7 @@
 package messageDTO.requests;
 
 import common.ClientProfile;
+import common.Constants;
 import messageDTO.Message;
 import messageDTO.TypeMessage;
 

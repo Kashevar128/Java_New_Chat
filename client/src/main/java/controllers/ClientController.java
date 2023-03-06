@@ -21,6 +21,9 @@ import messageDTO.respons.VerbalMessageResponse;
 import java.util.List;
 import java.util.function.Function;
 
+import static common.Constants.USER_OFFLINE;
+import static common.Constants.USER_ONLINE;
+
 
 public class ClientController {
 
@@ -60,8 +63,12 @@ public class ClientController {
 
     public void updateUsers(List<ClientProfile> listProfiles) {
         Function<ClientProfile, HBoxUser> createHBoxUserFunction =
-                (clientProfile) -> new HBoxUser((clientProfile.getName()),
-                        clientProfile.getAvatar());
+                (clientProfile) -> {
+                    if (clientProfile.isOnline()) {
+                        return new HBoxUser(clientProfile.getName(), clientProfile.getAvatar(), USER_ONLINE);
+                    }
+                    return new HBoxUser((clientProfile.getName()), clientProfile.getAvatar(), USER_OFFLINE);
+                };
         List<HBoxUser> hBoxUsers = listProfiles.stream()
                 .filter(clientProfile -> !clientProfile.getName().equals(client.getClientProfile().getName()))
                 .map(createHBoxUserFunction).toList();

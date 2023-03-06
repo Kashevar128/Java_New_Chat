@@ -8,7 +8,7 @@ import messageDTO.TypeMessage;
 import messageDTO.requests.AuthOrRegMessageRequest;
 import messageDTO.requests.VerbalMessageRequest;
 import messageDTO.respons.AuthOrRegMessageResponse;
-import messageDTO.respons.UpdateUsersResponse;
+import messageDTO.respons.UpdateUsersOnlineResponse;
 import messageDTO.respons.VerbalMessageResponse;
 import network.*;
 import dataBase.DataBaseImpl;
@@ -73,7 +73,7 @@ public class MyServer implements TCPConnectionListener {
     public void onDisconnect(TCPConnection tcpConnection) throws SocketException {
         tcpConnection.disconnect();
         connections.remove(tcpConnection);
-        updateListUsers(tcpConnection);
+        updateUsersOnline(tcpConnection);
         serverConsoleController.printMsg("Client " + tcpConnection + " disconnect");
     }
 
@@ -105,22 +105,20 @@ public class MyServer implements TCPConnectionListener {
     private synchronized void messageClientHandler(Message msg, TCPConnection tcpConnection) {
         TypeMessage typeMessage = msg.getTypeMessage();
         switch (typeMessage) {
-            case SERVICE_MESSAGE_AUTH_REG:
+            case SERVICE_MESSAGE_AUTH_REG -> {
                 assert msg instanceof AuthOrRegMessageRequest;
                 AuthOrRegMessageRequest authOrRegMessageRequest = (AuthOrRegMessageRequest) msg;
+                Function<ClientProfile, Boolean> dataBaseFunction = null;
                 if (authOrRegMessageRequest.getOperation() == AUTH) {
-                    Function<ClientProfile, Boolean> dataBaseAuthFunction = dataBase::auth;
-                    authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseAuthFunction);
-                    break;
+                    dataBaseFunction = dataBase::auth;
                 }
                 if (authOrRegMessageRequest.getOperation() == REG) {
-                    Function<ClientProfile, Boolean> dataBaseRegFunction = dataBase::reg;
-                    authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseRegFunction);
-                    break;
+                    dataBaseFunction = dataBase::reg;
                 }
-                break;
-
-            case VERBAL_MESSAGE:
+                if (dataBaseFunction == null) return;
+                authOrReg(authOrRegMessageRequest, tcpConnection, dataBaseFunction);
+            }
+            case VERBAL_MESSAGE -> {
                 assert msg instanceof VerbalMessageRequest;
                 VerbalMessageRequest verbalMessageRequest = (VerbalMessageRequest) msg;
                 String msgStr = verbalMessageRequest.getMessage();
@@ -130,6 +128,7 @@ public class MyServer implements TCPConnectionListener {
                         verbalMessageRequest.getClientProfile());
                 historyMessages.add(verbalMessageResponse);
                 sendAll(verbalMessageResponse, tcpConnection);
+            }
         }
     }
 
@@ -141,7 +140,8 @@ public class MyServer implements TCPConnectionListener {
             stringBuilder.append("$ban <name user> - разорвать связь с пользователем \n");
             stringBuilder.append("$exit - закрыть сервер \n");
             stringBuilder.append("$clear - очистить консоль сервера \n");
-            stringBuilder.append("$getUsers - показать список пользователей онлайн \n");
+            stringBuilder.append("$getUsersOnline - показать список пользователей онлайн \n");
+            stringBuilder.append("$getUsersBase - показать список пользователей базы данных \n");
             serverConsoleController.printMsg(stringBuilder.toString());
             return;
         }
@@ -160,8 +160,12 @@ public class MyServer implements TCPConnectionListener {
             serverConsoleController.clearLog();
             return;
         }
-        if (msg.equals("$getUsers")) {
-            printAllUsers();
+        if (msg.equals("$getUsersOnline")) {
+            printAllOnlineUsers();
+            return;
+        }
+        if (msg.equals("$getUsersBase")) {
+            printAllDataBaseUsers();
             return;
         }
         serverConsoleController.printMsg("Неизвестная команда");
@@ -194,9 +198,9 @@ public class MyServer implements TCPConnectionListener {
             byte[] baseAvatar = dataBase.getBaseAvatar(nameUser);
             clientProfile.setAvatar(baseAvatar);
             connections.put(tcpConnection, clientProfile);
-            message = new AuthOrRegMessageResponse(true, clientProfile, createUserList(), historyMessages);
+            message = new AuthOrRegMessageResponse(true, clientProfile, createUsersRegList(), historyMessages);
             onSendPackage(tcpConnection, message);
-            updateListUsers(tcpConnection);
+            updateUsersOnline(tcpConnection);
             return;
         }
         message = new AuthOrRegMessageResponse(false);
@@ -204,21 +208,26 @@ public class MyServer implements TCPConnectionListener {
         serverConsoleController.printMsg("authentication false!");
     }
 
-    private void updateListUsers(TCPConnection tcpConnection) {
-        Message msg = new UpdateUsersResponse(createUserList());
+    private void updateUsersOnline(TCPConnection tcpConnection) {
+        Message msg = new UpdateUsersOnlineResponse(createUsersRegList());
         sendAll(msg, tcpConnection);
     }
 
-    private void printAllUsers() {
-        serverConsoleController.printMsg(getAllUsers().toString());
+    private void printAllOnlineUsers() {
+        serverConsoleController.printMsg(getAllOnlineUsers().toString());
     }
 
-    private List<String> getAllUsers() {
-        return createUserList().stream().map(ClientProfile::getName).toList();
+    private void printAllDataBaseUsers() {
+        List<ClientProfile> allUsers = dataBase.getAllUsers();
+        serverConsoleController.printMsg(allUsers.stream().map(ClientProfile::getName).toList().toString());
+    }
+
+    private List<String> getAllOnlineUsers() {
+        return createUsersOnlineList().stream().map(ClientProfile::getName).toList();
     }
 
     private void ban(String name) {
-        List<String> listNames = getAllUsers();
+        List<String> listNames = getAllOnlineUsers();
         if (listNames.contains(name)) {
             connections.forEach((key, value) -> {
                 if (value.getName().equals(name)) {
@@ -229,8 +238,21 @@ public class MyServer implements TCPConnectionListener {
         }
     }
 
-    private List<ClientProfile> createUserList() {
+    private List<ClientProfile> createUsersOnlineList() {
         return new ArrayList<>(connections.values());
+    }
+
+    private List<ClientProfile> createUsersRegList() {
+        List<ClientProfile> allUsers = dataBase.getAllUsers();
+        List<ClientProfile> usersOnline = createUsersOnlineList();
+        for (int i = 0; i < usersOnline.size(); i++) {
+            for (int j = 0; j < allUsers.size(); j++) {
+                if (usersOnline.get(i).getName().equals(allUsers.get(j).getName())) {
+                    allUsers.get(j).setOnline(true);
+                }
+            }
+        }
+        return allUsers;
     }
 
     public void setServerConsoleController(ServerConsoleController serverConsoleController) {

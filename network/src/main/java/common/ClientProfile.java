@@ -7,11 +7,13 @@ public class ClientProfile implements Serializable {
     private String name;
     private String password;
     private byte[] avatar;
+    private boolean online;
 
     public ClientProfile(String name, String password, byte[] avatar) {
         this.name = name;
         this.password = password;
         this.avatar = avatar;
+        this.online = false;
     }
 
     public ClientProfile(String name, String password) {
@@ -33,5 +35,13 @@ public class ClientProfile implements Serializable {
 
     public void setAvatar(byte[] avatar) {
         this.avatar = avatar;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
+
+    public boolean isOnline() {
+        return online;
     }
 }

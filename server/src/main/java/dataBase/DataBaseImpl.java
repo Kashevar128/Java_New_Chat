@@ -5,6 +5,8 @@ import org.intellij.lang.annotations.Language;
 import ava.Avatar;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DataBaseImpl implements AuthService, DataBase {
 
@@ -100,6 +102,25 @@ public class DataBaseImpl implements AuthService, DataBase {
             return rs.getBytes("avatar");
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public List<ClientProfile> getAllUsers() {
+        @Language("SQLite") String query = "SELECT * FROM users";
+        try (Statement statement = connection.createStatement()) {
+            ResultSet rs = statement.executeQuery(query);
+            List<ClientProfile> clientProfiles = new ArrayList<>();
+            while (rs.next()) {
+                String name = rs.getString("name");
+                String password = rs.getString("password");
+                byte[] avatar = rs.getBytes("avatar");
+                ClientProfile clientProfile = new ClientProfile(name, password, avatar);
+                clientProfiles.add(clientProfile);
+            }
+            return clientProfiles;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Список пуст или ошибка базы данных");
         }
     }
 

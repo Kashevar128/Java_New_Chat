@@ -30,7 +30,7 @@
                   <Font size="20.0" />
                </font>
             </Label>
-            <Button fx:id="exitButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" onAction="#exitClient">
+            <Button fx:id="exitButton" mnemonicParsing="false" onAction="#exitClient" prefHeight="50.0" prefWidth="50.0">
                <HBox.margin>
                   <Insets left="400.0" />
                </HBox.margin>
@@ -43,7 +43,7 @@
          <children>
             <HBox prefHeight="100.0" prefWidth="270.0" style="-fx-background-color: #a1b2ba;">
                <children>
-                  <Label prefHeight="36.0" prefWidth="259.0" text="                 Users online" textAlignment="RIGHT" textFill="#0ae802">
+                  <Label prefHeight="36.0" prefWidth="259.0" text="                 Users online" textAlignment="RIGHT" textFill="#2962b9">
                      <font>
                         <Font size="16.0" />
                      </font>

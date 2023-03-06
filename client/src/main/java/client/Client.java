@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import messageDTO.Message;
 import messageDTO.TypeMessage;
 import messageDTO.respons.AuthOrRegMessageResponse;
-import messageDTO.respons.UpdateUsersResponse;
+import messageDTO.respons.UpdateUsersOnlineResponse;
 import messageDTO.respons.VerbalMessageResponse;
 import network.TCPConnection;
 import network.TCPConnectionListener;
@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 public class Client implements TCPConnectionListener {
 
@@ -34,6 +35,7 @@ public class Client implements TCPConnectionListener {
     private ClientController clientController;
     private ClientProfile clientProfile;
     private boolean emergencyExit = true;
+    private List<ClientProfile> clientProfileList;
 
     static {
         try {
@@ -132,6 +134,7 @@ public class Client implements TCPConnectionListener {
                             clientController.setNameLabel(clientProfile.getName());
                             clientController.setUserAva(image);
                             clientController.updateUsers(authOrRegMessageResponse.getClientProfiles());
+                            clientProfileList = authOrRegMessageResponse.getClientProfiles();
                             clientController.updateListDialog(authOrRegMessageResponse.getListDialogs());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -142,10 +145,10 @@ public class Client implements TCPConnectionListener {
                 Platform.runLater(AlertWindowsClass::showAuthFalse);
                 break;
 
-            case SERVICE_MESSAGE_UPDATE_USERS:
-                assert msg instanceof UpdateUsersResponse;
-                UpdateUsersResponse updateUsersResponse = (UpdateUsersResponse) msg;
-                clientController.updateUsers(updateUsersResponse.getProfilesUsers());
+            case SERVICE_MESSAGE_UPDATE_ONLINE_USERS:
+                assert msg instanceof UpdateUsersOnlineResponse;
+                UpdateUsersOnlineResponse updateUsersOnlineResponse = (UpdateUsersOnlineResponse) msg;
+                clientController.updateUsers(updateUsersOnlineResponse.getProfilesUsersOnline());
                 break;
 
             case VERBAL_MESSAGE:
@@ -170,5 +173,9 @@ public class Client implements TCPConnectionListener {
             if (authStage != null) authStage.close();
             if (clientStage != null) clientStage.close();
         });
+    }
+
+    public List<ClientProfile> getClientProfileList() {
+        return clientProfileList;
     }
 }
