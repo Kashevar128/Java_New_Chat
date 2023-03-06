@@ -8,9 +8,15 @@
 
 Пользователи по умолчанию для тестирования приложения:
 
-логин: User1, пароль: SDdfopp4567,
-логин: User2, пароль: GHsdfnxcv890.
+1. логин: JaJoba303, пароль: 200,
+2. логин: malk, пароль: 300,
+3. логин: steve128, пароль: 008
 
-JaJoba303,200
-malk,300
-steve128,008
+Запуск приложения:
+
+1. git clone https://github.com/Kashevar128/Java_New_Chat.git
+2. cd Java_New_Chat
+3. mvn clean package
+4. java -jar server/target/server-1.0-SNAPSHOT-jar-with-dependencies.jar
+5. java -jar client/target/client-1.0-SNAPSHOT-jar-with-dependencies.jar   
+
